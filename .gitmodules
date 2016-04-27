@@ -1,0 +1,6 @@
+[submodule "same70-base_16"]
+	path = same70-base_16
+	url = http://revolvevault.ivt.ntnu.no:7990/scm/rev16/same70-base_16.git
+[submodule "revolve_can_definitions_16"]
+	path = revolve_can_definitions_16
+	url = http://revolvevault.ivt.ntnu.no:7990/scm/rev16/revolve_can_definitions_16.git
