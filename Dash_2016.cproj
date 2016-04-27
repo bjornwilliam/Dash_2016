@@ -29,15 +29,15 @@
     <ExternalProgrammingToolCommand />
     <AsfFrameworkConfig>
       <framework-data xmlns="">
-  <options />
-  <configurations />
-  <files />
-  <documentation help="" />
-  <offline-documentation help="" />
-  <dependencies>
-    <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.27.3" />
-  </dependencies>
-</framework-data>
+        <options />
+        <configurations />
+        <files />
+        <documentation help="" />
+        <offline-documentation help="" />
+        <dependencies>
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.27.3" />
+        </dependencies>
+      </framework-data>
     </AsfFrameworkConfig>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -130,18 +130,308 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="board.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\canMessages.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\canMessages.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\mcanFreeRTOSWrapper.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\mcanFreeRTOSWrapper.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\tc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\tc.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Device_Startup\startup_same70.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Device_Startup\system_same70.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="FreeRTOSConfig.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hardwareInit.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hardwareInit.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="main.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="revolve_can_definitions_16\revolve_can_definitions.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\arm_common_tables.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\arm_const_structs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\arm_math.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\cmsis_armcc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\cmsis_armcc_V6.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\cmsis_gcc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\core_cm0.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\core_cm0plus.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\core_cm3.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\core_cm4.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\core_cm7.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\core_cmFunc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\core_cmInstr.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\core_cmSimd.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\core_sc000.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\CMSIS DSP\Includes\core_sc300.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\event_groups.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\include\croutine.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\include\deprecated_definitions.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\include\event_groups.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\include\FreeRTOS.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\include\list.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\include\mpu_wrappers.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\include\portable.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\include\projdefs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\include\queue.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\include\semphr.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\include\StackMacros.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\include\task.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\include\timers.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\list.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\portable\GCC\ARM_CM7\r0p1\port.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\portable\GCC\ARM_CM7\r0p1\portmacro.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\portable\MemMang\heap_4.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\queue.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\tasks.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\FreeRTOS\Source\timers.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\ADC\adc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\ADC\adc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\CAN\can.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\CAN\can.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\CAN\can_status_codes.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\CAN\can_types.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\CAN\mcan.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\CAN\mcan.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\delay.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\delay.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\eefc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\Flash\eefc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\Flash\eefc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\Flash\flash_userPage.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\Flash\flash_userPage.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\Flash\interrupt_util.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\fpu.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\pio.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\pio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\pmc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\pmc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\PWM\pwm.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\PWM\pwm.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\spi.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\spi.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\stdio\read.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\stdio\syscalls.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\stdio\write.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\uart.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\uart.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\USART\Common_driver\usart.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\USART\Common_driver\usart.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\USART\usart_rs232\usart_rs232.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\USART\usart_rs232\usart_rs232.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\USART\usart_spi\usart_spi.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\USART\usart_spi\usart_spi.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\wdt.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\wdt.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\xdmac.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\xdmac.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="same70-base_16\RevolveDrivers\xdmac_wrapper.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Dash_drivers\" />
     <Folder Include="Device_Startup\" />
+    <Folder Include="revolve_can_definitions_16\" />
+    <Folder Include="same70-base_16\" />
+    <Folder Include="same70-base_16\CMSIS DSP\" />
+    <Folder Include="same70-base_16\CMSIS DSP\Includes\" />
+    <Folder Include="same70-base_16\FreeRTOS\" />
+    <Folder Include="same70-base_16\FreeRTOS\Source\" />
+    <Folder Include="same70-base_16\FreeRTOS\Source\include\" />
+    <Folder Include="same70-base_16\FreeRTOS\Source\portable\" />
+    <Folder Include="same70-base_16\FreeRTOS\Source\portable\GCC\" />
+    <Folder Include="same70-base_16\FreeRTOS\Source\portable\GCC\ARM_CM7\" />
+    <Folder Include="same70-base_16\FreeRTOS\Source\portable\GCC\ARM_CM7\r0p1\" />
+    <Folder Include="same70-base_16\FreeRTOS\Source\portable\MemMang\" />
+    <Folder Include="same70-base_16\RevolveDrivers\" />
+    <Folder Include="same70-base_16\RevolveDrivers\ADC\" />
+    <Folder Include="same70-base_16\RevolveDrivers\CAN\" />
+    <Folder Include="same70-base_16\RevolveDrivers\Flash\" />
+    <Folder Include="same70-base_16\RevolveDrivers\PWM\" />
+    <Folder Include="same70-base_16\RevolveDrivers\stdio\" />
+    <Folder Include="same70-base_16\RevolveDrivers\USART\" />
+    <Folder Include="same70-base_16\RevolveDrivers\USART\Common_driver\" />
+    <Folder Include="same70-base_16\RevolveDrivers\USART\usart_rs232\" />
+    <Folder Include="same70-base_16\RevolveDrivers\USART\usart_spi\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Device_Startup\same70n21_flash.ld">
@@ -154,6 +444,39 @@
       <SubType>compile</SubType>
     </None>
     <None Include="Device_Startup\same70_sram.ld">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="revolve_can_definitions_16\.git">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="same70-base_16\.git">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="same70-base_16\CMSIS DSP\libarm_cortexM7lfdp_math.a">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="same70-base_16\CMSIS DSP\libarm_cortexM7lfsp_math.a">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="same70-base_16\CMSIS DSP\libarm_cortexM7lfsp_math_softfp.a">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="same70-base_16\CMSIS DSP\libarm_cortexM7l_math.a">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="same70-base_16\FreeRTOS\readme.txt">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="same70-base_16\FreeRTOS\Source\include\stdint.readme">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="same70-base_16\FreeRTOS\Source\portable\GCC\ARM_CM7\ReadMe.txt">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="same70-base_16\FreeRTOS\Source\portable\readme.txt">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="same70-base_16\FreeRTOS\Source\readme.txt">
       <SubType>compile</SubType>
     </None>
   </ItemGroup>
