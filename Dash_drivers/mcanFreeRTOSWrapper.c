@@ -41,20 +41,12 @@ enum status_code mcan_freeRTOSSendMessage(Mcan *mcan, struct Can_message_t messa
 	}
 	//return can_status;
 }
+QueueHandle_t xDeviceStatusQueue = NULL;
+QueueHandle_t xRemoteControlQueue = NULL;
+QueueHandle_t xDataLoggerQueue = NULL;
+QueueHandle_t xDashQueue = NULL;
+uint32_t can_send_to_datalogger_queue_failed = 0;
 
-void mcan0_CallbackFunction(uint32_t index) {
-	struct Can_message_t message;
-	can_getMessage(MCAN0, &message, index);
-	xQueueSendToBackFromISR(Queue_CAN_to_Safety, &message, NULL);
-	xQueueSendToBackFromISR(Queue_CAN_to_TV, &message, NULL);
-}
-
-void mcan1_CallbackFunction(uint32_t index) {
-	struct Can_message_t message;
-	can_getMessage(MCAN1, &message, index);	
-	xQueueSendToBackFromISR(Queue_CAN_to_Safety, &message, NULL);
-	xQueueSendToBackFromISR(Queue_CAN_to_TV, &message, NULL);
-}
 
 #define DATALOGGER_QUEUE_SIZE 250
 
@@ -64,17 +56,40 @@ struct SensorMessage {
 };
 struct SensorMessage SensorPacket;
 
+
+void mcan0_CallbackFunction(uint32_t index) {
+	struct Can_message_t message;
+	can_getMessage(MCAN0, &message, index);
+	SensorPacket.CanMsg = message;
+	SensorPacket.time_stamp = 0;
+	if (xQueueSendToBackFromISR(xDataLoggerQueue,&SensorPacket,NULL) != pdTRUE) {
+		can_send_to_datalogger_queue_failed += 1;
+	}
+	//xQueueSendToBackFromISR(Queue_CAN_to_Safety, &message, NULL);
+	//xQueueSendToBackFromISR(Queue_CAN_to_Safety, &message, NULL);
+	//xQueueSendToBackFromISR(Queue_CAN_to_TV, &message, NULL);
+}
+
+void mcan1_CallbackFunction(uint32_t index) {
+	struct Can_message_t message;
+	can_getMessage(MCAN1, &message, index);
+	SensorPacket.CanMsg = message;
+	SensorPacket.time_stamp = 0;
+	if (xQueueSendToBackFromISR(xDataLoggerQueue,&SensorPacket,NULL) != pdTRUE) {
+		can_send_to_datalogger_queue_failed += 1;
+	}	
+}
+
+
+
 // Hack to read a fraction of the inverter messages, since they are sent way too often.
 #define INVERTER_MESSAGE_DELAY_COUNTER 80
 static uint32_t inverter_time_counter_status = 0;
 static uint32_t inverter_time_counter_voltage = 0;
 
-QueueHandle_t xDeviceStatusQueue = NULL;
-QueueHandle_t xRemoteControlQueue = NULL;
-QueueHandle_t xDataLoggerQueue = NULL;
-QueueHandle_t xDashQueue = NULL;
 
-uint32_t can_send_to_datalogger_queue_failed = 0;
+
+
 
 static uint8_t torque_alive = 0;
 
