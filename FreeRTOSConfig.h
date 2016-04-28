@@ -98,13 +98,8 @@
 #define configUSE_IDLE_HOOK						0
 #define configUSE_TICK_HOOK						0 // Default (1) 0 in 2015
 
-#if (PCB_VERSION == PRODUCTION_CARD)
-	#define configCPU_CLOCK_HZ					( 294000000)
-#elif (PCB_VERSION == PROTOTYPE_CARD)
-	#define configCPU_CLOCK_HZ					( 296000000)
-#else
-	#define configCPU_CLOCK_HZ					( 300000000)
-#endif
+
+#define configCPU_CLOCK_HZ					( 300000000)
 
 #define configTICK_RATE_HZ						( 1000 )
 #define configMAX_PRIORITIES					( 5 )

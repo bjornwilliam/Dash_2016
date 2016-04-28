@@ -14,13 +14,10 @@
 #define DISABLE_WRITE_PROTECTION  TC_WPMR_WPKEY_PASSWD
 #define PCK6 TC_CMR_TCCLKS_TIMER_CLOCK1
 #define BASE_FREQUENCY_PCK6 1000000
-#if (PCB_VERSION == PRODUCTION_CARD)
-	#define PMC_DIV		12	// 
-#elif (PCB_VERSION == PROTOTYPE_CARD)
-	#define PMC_DIV		16	// 16 MHz oscillator. Needs div = 16 to achieve 1 mhz frequency
-#else
-	#define PMC_DIV		16	// 16 MHz oscillator. Needs div = 16 to achieve 1 mhz frequency
-#endif
+
+#define PMC_DIV		12	// 
+
+
 #define REGISTER_A 0
 #define REGISTER_B 1
 #define REGISTER_C 2

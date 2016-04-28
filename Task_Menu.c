@@ -441,10 +441,10 @@ void dashTask() {
 		WDT->WDT_CR = WATCHDOG_RESET_COMMAND; // Restart watchdog timer
 		//Get relevant CAN messages from the specified freeRTOS queue
 		getDashMessages(&parameter,&confMsg,&error,&sensorValue, &status,&sensorPhysicalValue);
-		xSemaphoreTake(xButtonStruct, portMAX_DELAY);
+		//xSemaphoreTake(xButtonStruct, portMAX_DELAY);
 		
-		dashboardControlFunction(&btn,&error,&sensorValue,&status,&confMsg, &deviceState,&parameter,&sensorPhysicalValue);
-		xSemaphoreGive(xButtonStruct);
+		//dashboardControlFunction(&btn,&error,&sensorValue,&status,&confMsg, &deviceState,&parameter,&sensorPhysicalValue);
+		//xSemaphoreGive(xButtonStruct);
 		//vTaskDelay(35/portTICK_RATE_MS);
 		//vTaskDelayUntil(&xLastWakeTime,150/portTICK_RATE_MS);
 	}

@@ -280,7 +280,7 @@ void hsmci_init(void)
 // #if (SAMV70 || SAMV71 || SAME70 || SAMS70)
 // #ifdef HSMCI_DMA_DMAEN
 // 	// Enable clock for DMA controller
-// 	pmc_enable_periph_clk(ID_XDMAC);
+ 	pmc_enable_periph_clk(ID_XDMAC);
 // #endif
 // #endif
 

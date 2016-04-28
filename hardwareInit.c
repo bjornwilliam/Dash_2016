@@ -32,9 +32,9 @@ void PMCInit() {
 		struct PmcInit pmcInit = {
 			.main_freq = EXT_12MHZ,
 			.css = PLLA_CLOCK,
-			.pres = CLK_2,
+			.pres = CLK_1,
 			.divide = 1,
-			.multiply = 49 // This number is the actual number the clock will be multiplied with. Range: [1,62]
+			.multiply = 25 // This number is the actual number the clock will be multiplied with. Range: [1,62]
 		};
 		pmc_init_clocks(pmcInit);
 	}

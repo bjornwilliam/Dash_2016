@@ -32,11 +32,11 @@ int main(void)
 	bytesremaining = xPortGetFreeHeapSize();
 	//status = xTaskCreate(usbMscTask,"MscTask",1000, NULL, tskIDLE_PRIORITY + 1, &mscTaskHandle);
 	bytesremaining = xPortGetFreeHeapSize();
-	status = xTaskCreate(dataLoggerTask,"Datalogger",2500,NULL,tskIDLE_PRIORITY +3, &dataLoggerHandle);
+	//status = xTaskCreate(dataLoggerTask,"Datalogger",2500,NULL,tskIDLE_PRIORITY +3, &dataLoggerHandle);
 	bytesremaining = xPortGetFreeHeapSize();
-	status = xTaskCreate(Task_remoteControl,"remote",500, NULL, tskIDLE_PRIORITY + 2,NULL);
+	//status = xTaskCreate(Task_remoteControl,"remote",500, NULL, tskIDLE_PRIORITY + 2,NULL);
 	bytesremaining = xPortGetFreeHeapSize();
-	xTaskCreate(deviceStatusTask,"device",500,NULL,tskIDLE_PRIORITY + 4,NULL);
+	//xTaskCreate(deviceStatusTask,"device",500,NULL,tskIDLE_PRIORITY + 4,NULL);
 	//xTaskCreate(Task_ButtonInput, "buttonTask", configMINIMAL_STACK_SIZE, NULL,  tskIDLE_PRIORITY + 1, NULL);
 	//xTaskCreate(Task_RotaryEncoder,"rotary", configMINIMAL_STACK_SIZE,NULL, tskIDLE_PRIORITY + 2, NULL);
 	vTaskStartScheduler();
