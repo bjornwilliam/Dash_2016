@@ -117,7 +117,7 @@ void hardwareInit() {
 		.spi_mode = MODE_0,
 		.chip_select = NPCS3,
 		.raise_CS_every_transfer = false,
-		.spi_baudRate_Hz = 5000000,
+		.spi_baudRate_Hz = 2000000,
 		.data_width = SPI_8BIT_DATA
 	};
 		 
