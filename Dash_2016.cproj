@@ -20,12 +20,12 @@
     <OverrideVtor>false</OverrideVtor>
     <CacheFlash>true</CacheFlash>
     <ProgFlashFromRam>true</ProgFlashFromRam>
-    <RamSnippetAddress />
+    <RamSnippetAddress>0x20000000</RamSnippetAddress>
     <UncachedRange />
     <preserveEEPROM>true</preserveEEPROM>
-    <OverrideVtorValue />
+    <OverrideVtorValue>exception_table</OverrideVtorValue>
     <BootSegment>2</BootSegment>
-    <eraseonlaunchrule>1</eraseonlaunchrule>
+    <eraseonlaunchrule>0</eraseonlaunchrule>
     <ExternalProgrammingToolCommand />
     <AsfFrameworkConfig>
       <framework-data xmlns="">
@@ -39,6 +39,18 @@
         </dependencies>
       </framework-data>
     </AsfFrameworkConfig>
+    <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
+    <avrtoolserialnumber>J41800024828</avrtoolserialnumber>
+    <avrdeviceexpectedsignature>0xA1020E00</avrdeviceexpectedsignature>
+    <com_atmel_avrdbg_tool_atmelice>
+      <ToolOptions xmlns="">
+        <InterfaceProperties>
+        </InterfaceProperties>
+      </ToolOptions>
+      <ToolType xmlns="">com.atmel.avrdbg.tool.atmelice</ToolType>
+      <ToolNumber xmlns="">J41800024828</ToolNumber>
+      <ToolName xmlns="">Atmel-ICE</ToolName>
+    </com_atmel_avrdbg_tool_atmelice>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -91,9 +103,13 @@
   <armgcc.common.outputfiles.eep>True</armgcc.common.outputfiles.eep>
   <armgcc.common.outputfiles.bin>True</armgcc.common.outputfiles.bin>
   <armgcc.common.outputfiles.srec>True</armgcc.common.outputfiles.srec>
+  <armgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</armgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
   <armgcc.compiler.symbols.DefSymbols>
     <ListValues>
       <Value>DEBUG</Value>
+      <Value>flash</Value>
+      <Value>__FPU_PRESENT=1</Value>
+      <Value>ARM_MATH_CM7=true</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -102,10 +118,10 @@
       <Value>%24(PackRepoDir)\arm\cmsis\4.2.0\CMSIS\Include\</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
-  <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
   <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
   <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
   <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
+  <armgcc.compiler.miscellaneous.OtherFlags>-std=gnu99 -mfpu=fpv5-d16 -mfloat-abi=hard -Wno-unused -Wno-switch</armgcc.compiler.miscellaneous.OtherFlags>
   <armgcc.linker.libraries.Libraries>
     <ListValues>
       <Value>libm</Value>
@@ -117,7 +133,8 @@
     </ListValues>
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
-  <armgcc.linker.miscellaneous.LinkerFlags>-Tsame70n21_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
+  <armgcc.linker.memorysettings.ExternalRAM />
+  <armgcc.linker.miscellaneous.LinkerFlags>-Tsame70n21_flash.ld -mfpu=fpv5-d16 -mfloat-abi=hard</armgcc.linker.miscellaneous.LinkerFlags>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
@@ -125,6 +142,11 @@
       <Value>%24(PackRepoDir)\arm\cmsis\4.2.0\CMSIS\Include\</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
+  <armgcc.preprocessingassembler.symbols.DefSymbols>
+    <ListValues>
+      <Value>ARM_MATH_CM7</Value>
+    </ListValues>
+  </armgcc.preprocessingassembler.symbols.DefSymbols>
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
 </ArmGcc>
     </ToolchainSettings>
@@ -133,10 +155,49 @@
     <Compile Include="board.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="canID_definitions.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Dash_drivers\canMessages.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Dash_drivers\canMessages.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\FT800\FT800.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\FT800\FT800.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\FT800\FT_GPU.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\FT800\high_voltage_symbol.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\hardware.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\hardware.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\high_voltage_symbol.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\interrupt\interrupt.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\interrupt\interrupt_sam_nvic.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\interrupt\interrupt_sam_nvic.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\IO_DashInit.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\IO_DashInit.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Dash_drivers\mcanFreeRTOSWrapper.c">
@@ -145,16 +206,106 @@
     <Compile Include="Dash_drivers\mcanFreeRTOSWrapper.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Dash_drivers\pinDefinitions.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\revolve_logo.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_handler.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_handler.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\compiler.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\conf_access.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\conf_sd_mmc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\ctrl_access.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\ctrl_access.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\fat\diskio.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\fat\diskio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\fat\ff.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\fat\ff.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\fat\ffconf.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\fat\integer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\hsmci.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\hsmci.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\parts.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\preprocessor\mrepeat.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\preprocessor\preprocessor.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\preprocessor\stringz.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\preprocessor\tpaste.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\sd_handler.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\sd_mmc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\sd_mmc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\sd_mmc_mem.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\sd_mmc_mem.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\sd_mmc\sd_mmc_protocol.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\status_codes.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Dash_drivers\tc.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Dash_drivers\tc.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Dash_drivers\xdmac_def.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Device_Startup\startup_same70.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Device_Startup\system_same70.c">
+    <Compile Include="error_names.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="FreeRTOSConfig.h">
@@ -406,9 +557,51 @@
     <Compile Include="same70-base_16\RevolveDrivers\xdmac_wrapper.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Task_ButtonInput.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Task_ButtonInput.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Task_DataLogger.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Task_DataLogger.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Task_DeviceStatus.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Task_DeviceStatus.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Task_Menu.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Task_Menu.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Task_RemoteControl.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Task_RemoteControl.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Task_USBMSC.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Task_USBMSC.h">
+      <SubType>compile</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Dash_drivers\" />
+    <Folder Include="Dash_drivers\FT800\" />
+    <Folder Include="Dash_drivers\interrupt\" />
+    <Folder Include="Dash_drivers\sd_mmc\" />
+    <Folder Include="Dash_drivers\sd_mmc\fat\" />
+    <Folder Include="Dash_drivers\sd_mmc\fat\option\" />
+    <Folder Include="Dash_drivers\sd_mmc\preprocessor\" />
     <Folder Include="Device_Startup\" />
     <Folder Include="revolve_can_definitions_16\" />
     <Folder Include="same70-base_16\" />

@@ -1,7 +1,7 @@
 #ifndef HARDWAREINIT_H_
 #define HARDWAREINIT_H_
 
-#include "ECUDrivers/tc.h"
+#include "Dash_drivers/tc.h"
 
 extern enum tc_timer TV_hardware_timer;
 extern enum tc_timer Safety_sendINSCAN_timer;

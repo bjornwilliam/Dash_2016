@@ -1,6 +1,8 @@
 #include "hardwareInit.h"
+#include <sam.h>
+#include <stdbool.h>
 
-#include "ECUDrivers/mcanFreeRTOSWrapper.h"
+#include "Dash_drivers/mcanFreeRTOSWrapper.h"
 #include "same70-base_16/RevolveDrivers/eefc.h"
 #include "same70-base_16/RevolveDrivers/pio.h"
 #include "same70-base_16/RevolveDrivers/pmc.h"
@@ -9,12 +11,11 @@
 #include "same70-base_16/RevolveDrivers/spi.h"
 #include "same70-base_16/RevolveDrivers/uart.h"
 #include "same70-base_16/RevolveDrivers/delay.h"
+#include "same70-base_16/RevolveDrivers/spi.h"
 
-#include "ECUDrivers/uart_dma_INS.h"
-#include "ECUDrivers/VN_200_INS.h"
-#include "ECUDrivers/tc.h"
-
-#include <sam.h>
+#include "Dash_drivers/sd_mmc/ctrl_access.h"
+#include "Dash_drivers/sd_mmc/sd_mmc.h"
+#include "Dash_drivers/tc.h"
 #include "board.h"
 
 
@@ -60,6 +61,26 @@ void PMCInit() {
 }
 
 
+static void sdInit(){
+	pio_setMux(PIOA,25,D);	// MCCK
+	pio_setMux(PIOA,28,C);	// MCCDA
+	pio_setMux(PIOA,30,C);	// MCDA0
+	pio_setMux(PIOA,31,C);	// MCDA1
+	pio_setMux(PIOA,26,C);	// MCDA2
+	pio_setMux(PIOA,27,C);	// MCDA3
+	
+	sd_mmc_init();
+	Ctrl_status status;
+	//Wait for card present and ready:
+	do {
+		status = sd_mmc_test_unit_ready(0);
+		if (CTRL_FAIL == status) {
+			while (CTRL_NO_PRESENT != sd_mmc_check(0)) {
+			}
+		}
+	} while (CTRL_GOOD != status);
+}
+
 void hardwareInit() {
 	//NVIC_SetPriorityGrouping(0U);
 	fpu_enable();
@@ -76,90 +97,39 @@ void hardwareInit() {
 	tc_initTimer(Safety_sendINSCAN_timer, 100); // Estimations Block
 	tc_initTimer(TV_to_analyze_timer, 100); // Estimations Block
 	
+// SD CARD
 	
-
+	sdInit();
 
 // **************************************************************************************
 // ************************************ SPI *********************************************
 // **************************************************************************************	
 	// CHIP SELECT FRAM = PIN 32 = SPI0_NPCS3
-	struct SpiMuxSettings spi_mux_settings = {
+
+	struct SpiMasterSettings masterSettings = {
 		.cs_0 = none0,
 		.cs_1 = none1,
 		.cs_2 = none2,
-		.cs_3 = PD27
+		.cs_3 = PD27,
+		.CSDelay_ns = 0
 	};
-	struct SpiChipSelectSettings spi_cs3_settings = {
+	struct SpiSlaveSettings slave_ft800_settings = {
 		.spi_mode = MODE_0,
-		.chip_select = 3,
-		.peripheral_clock_Hz = configCPU_CLOCK_HZ/2,
-		.spi_baudRate_Hz = 10000000
-		};
-	spi_master_init(SPI0,spi_mux_settings);
-	spi_chip_select_init(SPI0,spi_cs3_settings);
-// **************************************************************************************
-// ************************************ UART ********************************************
-// **************************************************************************************	
-	struct uart_config uart_settings = {
-		// UARTX1 = PIN55 = PA4
-		// UARTRX1 = PIN52 = PA5
-		.uartID = UART1,
-		.TX_pin = UART1_TX_PIN_PA4,
-		.RX_pin = UART1_RX_PIN_PA5,
-		.parity = NO_PARITY,
-		.mode = NORMAL_MODE,
-		.baudrate = 115200
-		};
-	uart_init(uart_settings);
-	//uart_setCompareRegisterFlagOnly(UART1, 0xfa,0xfa);
-	//uart_enableCompareInterrupt(UART1);
-	uart_enableRxReadyInterrupt(UART1);
-	NVIC_ClearPendingIRQ(UART1_IRQn);
-	NVIC_SetPriority(UART1_IRQn, 5);	
-	
-	// Enable cmp interrupt, load cmp register with newline
+		.chip_select = NPCS3,
+		.raise_CS_every_transfer = false,
+		.spi_baudRate_Hz = 5000000,
+		.data_width = SPI_8BIT_DATA
+	};
+		 
+ 	spi_master_init(SPI0,masterSettings);
+ 	spi_chip_select_init(SPI0,slave_ft800_settings);
+
 
 // **************************************************************************************
 // ************************************ MCAN  *******************************************
 // **************************************************************************************	
 	mcan_freeRTOSSetup();
-// **************************************************************************************
-// ************************************ INS *********************************************
-// **************************************************************************************
 
-	// WAIT UNTIL INS IS READY TO RECEIVE SETTINGS
-	delay_ms(1000);
-	VN200_UART_stopAsyncOutput();
-	
-	VN200_configureIMUFilter(8,4); // 800 hz / 8 filter width -> 100 Hz eq 
-	VN200_setBaudRate(460800);
-	uart_settings.baudrate = (459000); // to get the baud rate div to be 20 instead of 19, more accurate.
-	uart_init(uart_settings);
-	delay_ms(1000);
-	// Define output format of message from INS
-	struct INSOutput fastSensorDataMessage = {
-		.outputRegister			= REG_BINARY_OUTPUT_1,
-		.output_frequency_Hz	= 200,
-		.output_group			= COMMON_GROUP | ATTITUDE_GROUP | INS_GROUP,
-		.group_field_1			= (COMMON_ANGULAR_RATES | COMMON_YAW_PITCH_ROLL),
-		.group_field_2			= ATTITUDE_ACCEL_LIN,
-		.group_field_3			= INS_VEL_BODY,
-		.payload_length			= (COMMON_ANGULAR_RATES_SIZE + COMMON_YAW_PITCH_ROLL_SIZE +
-								  ATTITUDE_ACCEL_LIN_SIZE + INS_VEL_BODY_SIZE)
-	};
-	struct INSOutput slowDataMessage = {
-		.outputRegister			= REG_BINARY_OUTPUT_2,
-		.output_frequency_Hz	= 5,
-		.output_group			= GPS_GROUP | ATTITUDE_GROUP |  INS_GROUP,
-		.group_field_1			= GPS_NUM_TRACKED_SATELLITE | GPS_FIX,
-		.group_field_2			= ATTITUDE_STATUS,
-		.group_field_3			= INS_STATUS | INS_LLA,
-		.payload_length			= ( GPS_NUM_TRACKED_SATTELITE_SIZE + GPS_FIX_SIZE + ATTITUDE_STATUS_SIZE  + INS_STATUS_SIZE + INS_LLA_SIZE)
-	}; 
-	VN200_activateFastOutputGroup(fastSensorDataMessage);
-	VN200_activateSlowOutputGroup(slowDataMessage);
-//***************************************************************************************** //
-	uart_resetStatusRegister(UART1);
-	NVIC_ClearPendingIRQ(UART1_IRQn);
+
 	
 }

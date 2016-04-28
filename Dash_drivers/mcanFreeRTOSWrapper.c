@@ -56,9 +56,43 @@ void mcan1_CallbackFunction(uint32_t index) {
 	xQueueSendToBackFromISR(Queue_CAN_to_TV, &message, NULL);
 }
 
+#define DATALOGGER_QUEUE_SIZE 250
+
+struct SensorMessage {
+	struct Can_message_t CanMsg;
+	uint32_t time_stamp;
+};
+struct SensorMessage SensorPacket;
+
+// Hack to read a fraction of the inverter messages, since they are sent way too often.
+#define INVERTER_MESSAGE_DELAY_COUNTER 80
+static uint32_t inverter_time_counter_status = 0;
+static uint32_t inverter_time_counter_voltage = 0;
+
+QueueHandle_t xDeviceStatusQueue = NULL;
+QueueHandle_t xRemoteControlQueue = NULL;
+QueueHandle_t xDataLoggerQueue = NULL;
+QueueHandle_t xDashQueue = NULL;
+
+uint32_t can_send_to_datalogger_queue_failed = 0;
+
+static uint8_t torque_alive = 0;
+
 void mcan_freeRTOSSetup() {
-	Queue_CAN_to_Safety			= xQueueCreate(20,sizeof(struct Can_message_t));
-	Queue_CAN_to_TV				= xQueueCreate(20,sizeof(struct Can_message_t));
+		SensorPacket.CanMsg.data.u64  = 0;
+		SensorPacket.CanMsg.dataLength = 0;
+		SensorPacket.CanMsg.messageID = 0;
+		SensorPacket.time_stamp = 0;
+	
+	//Queue_CAN_to_Safety			= xQueueCreate(20,sizeof(struct Can_message_t));
+	//Queue_CAN_to_TV				= xQueueCreate(20,sizeof(struct Can_message_t));
+	xDataLoggerQueue	= xQueueCreate(DATALOGGER_QUEUE_SIZE,sizeof(SensorPacket));
+	xDashQueue			= xQueueCreate(20,sizeof(struct Can_message_t));
+	// Only needs one byte to identify the different buttons
+	xRemoteControlQueue = xQueueCreate(20,sizeof(uint8_t));
+	xDeviceStatusQueue	= xQueueCreate(20,sizeof(uint8_t));
+	
+	
 	can_mutex_0					= xSemaphoreCreateMutex();
 	can_mutex_1					= xSemaphoreCreateMutex();
 	mcan_init(MCAN0, CAN_BPS_1000K);
