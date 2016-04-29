@@ -15,7 +15,8 @@
 #include "canID_definitions.h"
 #include "Dash_drivers/mcanFreeRTOSWrapper.h"
 
-
+#include "same70-base_16/RevolveDrivers/spi.h"
+#include "Dash_drivers/spi_wrapper.h"
 //#include "snakeGame.h"
 #include "Dash_drivers/FT800/FT800.h"
 
@@ -409,18 +410,35 @@ void dashTask() {
 	//ECarState carState = TRACTIVE_SYSTEM_OFF;
 	
 	//Start FT800 in a clean way
-	vTaskDelay(20/portTICK_RATE_MS);
+	vTaskDelay(40/portTICK_RATE_MS);
 	//delay_ms(50);
 	pio_setOutput(FT800_POWERDOWN_PIO,FT800_POWERDOWN_PIN,PIN_LOW);
 	vTaskDelay(200/portTICK_RATE_MS);
 	//delay_ms(200);
 	pio_setOutput(FT800_POWERDOWN_PIO,FT800_POWERDOWN_PIN,PIN_HIGH);
-	vTaskDelay(20/portTICK_RATE_MS);
+	vTaskDelay(60/portTICK_RATE_MS);
 	//delay_ms(50);
 	//xSemaphoreTake(spi_handlerIsDoneSempahore,0);
 	FT800_Init();
 	//Need to delay 50 ms after the init of ft800 before any transfers to it happen
 	vTaskDelay(50/portTICK_RATE_MS);
+	struct SpiSlaveSettings slave_ft800_settings = {
+		.spi_mode = MODE_0,
+		.chip_select = NPCS3,
+		.raise_CS_every_transfer = false,
+		.spi_baudRate_Hz = 20000000,
+		.data_width = SPI_8BIT_DATA
+	};
+	struct SpiMasterSettings masterSettings = {
+		.cs_0 = none0,
+		.cs_1 = none1,
+		.cs_2 = none2,
+		.cs_3 = PD27,
+		.CSDelay_ns = 0
+	};
+	spi_wrapper_master_init(SPI0,masterSettings);
+ 	//spi_master_init(SPI0,masterSettings);
+ 	spi_chip_select_init(SPI0,slave_ft800_settings);
 	//spi_setBaudRateHz(120000000,20000000,0); // Increase speed after init
 	
 	//Upload the highvoltage icon to the FT800 
@@ -523,10 +541,10 @@ static void dashboardControlFunction(Buttons *btn, ModuleError *error, SensorVal
 		
 		break;
 		case MAIN_SCREEN:
-		//if ((menuUpdate.update_menu == true) ) {
+		if ((menuUpdate.update_menu == true) ) {
 			menuUpdate.update_menu = false;
 			DrawMainScreen(sensorPhysicalValue, deviceState);
-		//}
+		}
 		break;
 		case MAIN_MENU:
 		if ((menuUpdate.update_menu == true) ) {

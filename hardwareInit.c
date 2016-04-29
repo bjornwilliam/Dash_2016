@@ -8,7 +8,7 @@
 #include "same70-base_16/RevolveDrivers/pmc.h"
 
 #include "same70-base_16/RevolveDrivers/fpu.h"
-#include "same70-base_16/RevolveDrivers/spi.h"
+
 #include "same70-base_16/RevolveDrivers/uart.h"
 #include "same70-base_16/RevolveDrivers/delay.h"
 #include "same70-base_16/RevolveDrivers/spi.h"
@@ -16,6 +16,9 @@
 #include "Dash_drivers/SD/ctrl_access.h"
 #include "Dash_drivers/SD/sd_mmc.h"
 #include "Dash_drivers/tc.h"
+
+#include "Dash_drivers/spi_wrapper.h"
+
 #include "board.h"
 
 
@@ -99,7 +102,7 @@ void hardwareInit() {
 	
 // SD CARD
 	
-	//sdInit();
+	sdInit();
 
 // **************************************************************************************
 // ************************************ SPI *********************************************
@@ -117,11 +120,11 @@ void hardwareInit() {
 		.spi_mode = MODE_0,
 		.chip_select = NPCS3,
 		.raise_CS_every_transfer = false,
-		.spi_baudRate_Hz = 1000000,
+		.spi_baudRate_Hz = 5000000,
 		.data_width = SPI_8BIT_DATA
 	};
-		 
- 	spi_master_init(SPI0,masterSettings);
+	spi_wrapper_master_init(SPI0, masterSettings);
+ 	//spi_master_init(SPI0,masterSettings);
  	spi_chip_select_init(SPI0,slave_ft800_settings);
 
 

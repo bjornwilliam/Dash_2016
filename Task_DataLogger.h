@@ -9,6 +9,7 @@
 extern SemaphoreHandle_t file_access_mutex;
 
 #define BUFFER_LENGTH 16384
+
 //#define BUFFER_LENGTH 32768
 //#define BUFFER_LENGTH 4096
 #define BUFFER_OFFSET 35

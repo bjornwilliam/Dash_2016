@@ -6,8 +6,8 @@
  */ 
 
 #include "FT800.h"
-#include "../../same70-base_16/RevolveDrivers/spi.h"
-
+//#include "../../same70-base_16/RevolveDrivers/spi.h"
+#include "../spi_wrapper.h"
 #include <string.h>
 unsigned short cmd_offset = 0;
 unsigned short dli = 0;
@@ -57,7 +57,7 @@ void host_command(ft_uint8_t command) {
 	
 	uint16_t tbuffer[3] = {command, 0, 0};
 	uint16_t rbuffer[3];
-	spi_transceive(tbuffer, rbuffer, 3, NPCS3);
+	spi_freeRTOSTranceive(tbuffer, rbuffer, 3, NPCS3);
 	/*
 	tr8(command);
 	tr8(0x00);
@@ -71,7 +71,7 @@ void wr8(unsigned long addr, ft_uint8_t value) {
  	uint16_t rbuffer[4];
 	//uint16_t tbuffer[4] = { (addr >> 16), (addr >> 8) , spi_word(false,0, addr),spi_word(true,0,value)};
 	//uint16_t rbuffer[4];
-	spi_transceive(tbuffer, rbuffer, 4, NPCS3);
+	spi_freeRTOSTranceive(tbuffer, rbuffer, 4, NPCS3);
 	//spi_freeRTOSTranceive(tbuffer, 4, 0,  rbuffer);
 	/*
 	tr8(0x80 | (addr >> 16));
@@ -84,12 +84,12 @@ void wr8(unsigned long addr, ft_uint8_t value) {
 void wr16(unsigned long addr, ft_uint16_t value) {
 	uint16_t tbuffer[5] = {(0x80 | (addr >> 16)) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF, value & 0xFF,  ((value >> 8) & 0xFF)};
 	uint16_t rbuffer[5];
-	spi_transceive(tbuffer, rbuffer, 5, NPCS3);
+	spi_freeRTOSTranceive(tbuffer, rbuffer, 5, NPCS3);
 }
 void wr32(unsigned long addr, ft_uint32_t value) {
 	uint16_t tbuffer[7] = {(0x80 | (addr >> 16)) & 0xFF,  (addr >> 8) & 0xFF, addr & 0xFF, value & 0xFF, ((value >> 8) & 0xFF),((value >> 16) & 0xFF) , ((value >> 24) & 0xFF) };
 	uint16_t rbuffer[7];
-	spi_transceive(tbuffer, rbuffer, 7, NPCS3);
+	spi_freeRTOSTranceive(tbuffer, rbuffer, 7, NPCS3);
 	
 }
 
@@ -123,7 +123,7 @@ ft_uint8_t wr8s(unsigned long addr, const ft_char8_t *s) {
 		}*/
 	}
 	tbuffer[counter +2 ] = 0;
-	spi_transceive(tbuffer, rbuffer, (counter+3), NPCS3);
+	spi_freeRTOSTranceive(tbuffer, rbuffer, (counter+3), NPCS3);
 	//spi_freeRTOSTranceive(tbuffer, counter+3, 0,  rbuffer);
 	return i;
 }

@@ -111,13 +111,13 @@ void dataLoggerTask() {
 						getPresetParametersFromFile(preset_file_name);
 						break;
 				}
-				if ( (pio_readPin(DETECT_USB_PIO,DETECT_USB_PIN) == 1 )  && (dataLoggerHandle == xSemaphoreGetMutexHolder(file_access_mutex)) ) {
-					dataloggerState = DATALOGGER_USB_CONNECTED;
-					xSemaphoreGive(file_access_mutex);
+				//if ( (pio_readPin(DETECT_USB_PIO,DETECT_USB_PIN) == 1 )  && (dataLoggerHandle == xSemaphoreGetMutexHolder(file_access_mutex)) ) {
+					//dataloggerState = DATALOGGER_USB_CONNECTED;
+					//xSemaphoreGive(file_access_mutex);
 					// Disable CAN interrupts while USB is connected
 					//can_disableRXInterrupt(CAN0_IRQn);
 					//can_disableRXInterrupt(CAN1_IRQn);
-				}
+				//}
 				// Send command to datalogger to extract data from SD card and send it to task_menu via a queue ?
 				
 				vTaskDelay(40/portTICK_RATE_MS);

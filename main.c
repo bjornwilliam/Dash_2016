@@ -9,13 +9,13 @@
 
 #include "hardwareInit.h"
 
-
-
 #include "Task_Menu.h"
 #include "Task_DataLogger.h"
 #include "Task_RemoteControl.h"
 #include "Task_DeviceStatus.h"
 #include "Dash_drivers/IO_DashInit.h"
+
+#include "Dash_drivers/spi_wrapper.h"
 
 
 
@@ -26,7 +26,10 @@ int main(void)
 
 	file_access_mutex			= xSemaphoreCreateMutex();
 	//xButtonStruct				= xSemaphoreCreateMutex();
-    
+	
+    spi_handlerIsDoneSempahore	= xSemaphoreCreateBinary();
+    spi_mutex					= xSemaphoreCreateMutex();
+	
 	BaseType_t status;
 	uint32_t bytesremaining;
 	xDataloggerCommandQueue		= xQueueCreate(5,sizeof(uint8_t));
