@@ -50,9 +50,8 @@
 #include "conf_sd_mmc.h"
 #include "sd_mmc_protocol.h"
 #include "sd_mmc.h"
-//#include "delay.h"
+#include "../../same70-base_16/RevolveDrivers/delay.h"
 #include "../../same70-base_16/RevolveDrivers/pio.h"
-
 
 
 //#include "core_cm7.h"
@@ -77,9 +76,8 @@
  * \defgroup sd_mmc_stack_internal Implementation of SD/MMC/SDIO Stack
  * @{
  */
-#define sd_mmc_is_spi()       false
 
-#define sd_mmc_is_mci()  true
+#define sd_mmc_is_mci()  (!sd_mmc_is_spi())
 
 // Enable debug information for SD/MMC module
 #ifdef SD_MMC_DEBUG
@@ -89,16 +87,43 @@
 #  define sd_mmc_debug(...)
 #endif
 
-
-#define SD_MMC_HSMCI_MEM_CNT 1
-#define SD_MMC_HSMCI_SLOT_0_SIZE  4
+#ifndef SD_MMC_SPI_MEM_CNT
+#  define SD_MMC_SPI_MEM_CNT 0
+#endif
+#ifndef SD_MMC_MCI_MEM_CNT
+#  define SD_MMC_MCI_MEM_CNT 0
+#endif
+#ifndef SD_MMC_HSMCI_MEM_CNT
+#  define SD_MMC_HSMCI_MEM_CNT 1
+#endif
 
 // Macros to switch SD MMC stack to the correct driver (MCI or SPI)
 
-#include "hsmci.h"
-#define driver  hsmci
-#define SD_MMC_MEM_CNT        SD_MMC_HSMCI_MEM_CNT
 
+
+# if (SD_MMC_HSMCI_MEM_CNT != 0)
+#    include "hsmci.h"
+#    define driver  hsmci
+#    define SD_MMC_MEM_CNT        SD_MMC_HSMCI_MEM_CNT
+#    define sd_mmc_is_spi()       false
+#  elif (SD_MMC_MCI_MEM_CNT != 0)
+#    include "mci.h"
+#    define driver  mci
+#    define SD_MMC_MEM_CNT        SD_MMC_MCI_MEM_CNT
+#    define sd_mmc_is_spi()       false
+#  else
+#    error No MCI or HSMCI interfaces are defined for SD MMC stack. \
+     SD_MMC_MCI_MEM_CNT or SD_MMC_HSMCI_MEM_CNT  must be added in board.h file.
+#  endif
+
+
+
+
+
+#if (!defined SD_MMC_0_CD_GPIO) || (!defined SD_MMC_0_CD_DETECT_VALUE)
+#  warning No pin for card detection has been defined in board.h. \
+   The define SD_MMC_0_CD_GPIO, SD_MMC_0_CD_DETECT_VALUE must be added in board.h file.
+#endif
 
 
 //! SD/MMC card states
@@ -186,20 +211,20 @@ const uint32_t mmc_trans_multipliers[16] = {
 //! \name MMC, SD and SDIO commands process
 //! @{
 
-//static bool mmc_mci_op_cond(void);
+static bool mmc_mci_op_cond(void);
 static bool sd_mci_op_cond(uint8_t v2);
 
 static bool sd_cm6_set_high_speed(void);
-//static bool mmc_cmd6_set_bus_width(uint8_t bus_width);
-//static bool mmc_cmd6_set_high_speed(void);
+static bool mmc_cmd6_set_bus_width(uint8_t bus_width);
+static bool mmc_cmd6_set_high_speed(void);
 static bool sd_cmd8(uint8_t * v2);
-//static bool mmc_cmd8(uint8_t *b_authorize_high_speed);
-//static bool sd_mmc_cmd9_spi(void);
+static bool mmc_cmd8(uint8_t *b_authorize_high_speed);
+static bool sd_mmc_cmd9_spi(void);
 static bool sd_mmc_cmd9_mci(void);
 static void mmc_decode_csd(void);
 static void sd_decode_csd(void);
 static bool sd_mmc_cmd13(void);
-//static bool sd_mmc_mci_install_mmc(void);
+static bool sd_mmc_mci_install_mmc(void);
 static bool sd_acmd6(void);
 static bool sd_acmd51(void);
 //! @}
@@ -230,7 +255,7 @@ static inline void SD_MMC_START_TIMEOUT(void)
 {
 	if (!SysTick->CTRL) {
 		sd_mmc_sam_systick_used = true;
-		SysTick->LOAD = (300000000 / (8 * 1000))
+		SysTick->LOAD = (sysclk_get_cpu_hz() / (8 * 1000))
 				* SD_MMC_DEBOUNCE_TIMEOUT;
 		SysTick->CTRL = SysTick_CTRL_ENABLE_Msk;
 	} else {
@@ -728,7 +753,7 @@ static sd_mmc_err_t sd_mmc_select_slot(uint8_t slot)
 	if (slot >= SD_MMC_MEM_CNT) {
 		return SD_MMC_ERR_SLOT;
 	}
-	//Assert(sd_mmc_nb_block_remaining == 0);
+	Assert(sd_mmc_nb_block_remaining == 0);
 
 	#if (defined SD_MMC_0_CD_GPIO)
 	//! Card Detect pins
@@ -784,9 +809,69 @@ static sd_mmc_err_t sd_mmc_select_slot(uint8_t slot)
 }
 
 
-
 /*
- brief Configures the driver with the selected card configuration
+static sd_mmc_err_t sd_mmc_select_slot(uint8_t slot)
+{
+	if (slot >= SD_MMC_MEM_CNT) {
+		return SD_MMC_ERR_SLOT;
+	}
+	Assert(sd_mmc_nb_block_remaining == 0);
+
+#if (defined SD_MMC_0_CD_GPIO)
+	//! Card Detect pins
+	if (pio_readPin(sd_mmc_cards[slot].cd_gpio)
+			!= SD_MMC_0_CD_DETECT_VALUE) {
+		if (sd_mmc_cards[slot].state == SD_MMC_CARD_STATE_DEBOUNCE) {
+			SD_MMC_STOP_TIMEOUT();
+		}
+		sd_mmc_cards[slot].state = SD_MMC_CARD_STATE_NO_CARD;
+		return SD_MMC_ERR_NO_CARD;
+	}
+	if (sd_mmc_cards[slot].state == SD_MMC_CARD_STATE_NO_CARD) {
+		// A card plug on going, but this is not initialized
+		sd_mmc_cards[slot].state = SD_MMC_CARD_STATE_DEBOUNCE;
+		// Debounce + Power On Setup
+		SD_MMC_START_TIMEOUT();
+		return SD_MMC_ERR_NO_CARD;
+	}
+	if (sd_mmc_cards[slot].state == SD_MMC_CARD_STATE_DEBOUNCE) {
+		if (!SD_MMC_IS_TIMEOUT()) {
+			// Debounce on going
+			return SD_MMC_ERR_NO_CARD;
+		}
+		// Card is not initialized
+		sd_mmc_cards[slot].state = SD_MMC_CARD_STATE_INIT;
+		// Set 1-bit bus width and low clock for initialization
+		sd_mmc_cards[slot].clock = SDMMC_CLOCK_INIT;
+		sd_mmc_cards[slot].bus_width = 1;
+		sd_mmc_cards[slot].high_speed = 0;
+	}
+	if (sd_mmc_cards[slot].state == SD_MMC_CARD_STATE_UNUSABLE) {
+		return SD_MMC_ERR_UNUSABLE;
+	}
+#else
+	// No pin card detection, then always try to install it
+	if ((sd_mmc_cards[slot].state == SD_MMC_CARD_STATE_NO_CARD)
+			|| (sd_mmc_cards[slot].state == SD_MMC_CARD_STATE_UNUSABLE)) {
+		// Card is not initialized
+		sd_mmc_cards[slot].state = SD_MMC_CARD_STATE_INIT;
+		// Set 1-bit bus width and low clock for initialization
+		sd_mmc_cards[slot].clock = SDMMC_CLOCK_INIT;
+		sd_mmc_cards[slot].bus_width = 1;
+		sd_mmc_cards[slot].high_speed = 0;
+	}
+#endif
+
+	// Initialize interface
+	sd_mmc_slot_sel = slot;
+	sd_mmc_card = &sd_mmc_cards[slot];
+	sd_mmc_configure_slot();
+	return (sd_mmc_cards[slot].state == SD_MMC_CARD_STATE_INIT) ?
+			SD_MMC_INIT_ONGOING : SD_MMC_OK;
+}* //changed this with my own version
+
+/**
+ * \brief Configures the driver with the selected card configuration
  */
 static void sd_mmc_configure_slot(void)
 {
@@ -1012,6 +1097,22 @@ static bool sd_mmc_mci_card_init(void)
 
 void sd_mmc_init(void)
 {
+	//! Enable the PMC clock for the card detect pins
+#if (defined SD_MMC_0_CD_GPIO) && (!defined SAM4L)
+# include "pmc.h"
+# define SD_MMC_ENABLE_CD_PIN(slot, unused) \
+	pmc_enable_periph_clk(10);	// <--- probably not correct.
+	MREPEAT(SD_MMC_MEM_CNT, SD_MMC_ENABLE_CD_PIN, ~)
+# undef SD_MMC_ENABLE_CD_PIN
+#endif
+	//! Enable the PMC clock for the card write protection pins
+#if (defined SD_MMC_0_WP_GPIO) && (!defined SAM4L)
+# include "pmc.h"
+# define SD_MMC_ENABLE_WP_PIN(slot, unused) \
+	pmc_enable_periph_clk(SD_MMC_##slot##_WP_PIO_ID);
+	MREPEAT(SD_MMC_MEM_CNT, SD_MMC_ENABLE_WP_PIN, ~)
+# undef SD_MMC_ENABLE_WP_PIN
+#endif
 	for (uint8_t slot = 0; slot < SD_MMC_MEM_CNT; slot++) {
 		sd_mmc_cards[slot].state = SD_MMC_CARD_STATE_NO_CARD;
 	}
@@ -1142,7 +1243,7 @@ sd_mmc_err_t sd_mmc_init_read_blocks(uint8_t slot, uint32_t start,
 
 sd_mmc_err_t sd_mmc_start_read_blocks(void *dest, uint16_t nb_block)
 {
-	//Assert(sd_mmc_nb_block_remaining >= nb_block);
+	Assert(sd_mmc_nb_block_remaining >= nb_block);
 
 	if (!hsmci_start_read_blocks(dest, nb_block)) {
 		sd_mmc_nb_block_remaining = 0;
@@ -1229,7 +1330,7 @@ sd_mmc_err_t sd_mmc_init_write_blocks(uint8_t slot, uint32_t start,
 
 sd_mmc_err_t sd_mmc_start_write_blocks(const void *src, uint16_t nb_block)
 {
-	//Assert(sd_mmc_nb_block_remaining >= nb_block);
+	Assert(sd_mmc_nb_block_remaining >= nb_block);
 	if (!hsmci_start_write_blocks(src, nb_block)) {
 		sd_mmc_nb_block_remaining = 0;
 		return SD_MMC_ERR_COMM;

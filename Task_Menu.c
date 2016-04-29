@@ -388,6 +388,8 @@ void dashTask() {
 	iAmAliveTimer			= xTimerCreate("iAmAlive",	1000/portTICK_RATE_MS,	pdTRUE,		0,			iAmAliveTimerCallback);
 	xTimerReset(iAmAliveTimer,0);
 	createAndStartMenuUpdateTimers();
+	pio_enableOutput(FT800_POWERDOWN_PIO, FT800_POWERDOWN_PIN);
+	pio_setOutput(FT800_POWERDOWN_PIO,FT800_POWERDOWN_PIN, PIN_HIGH);
 	
 	//Init states
 	SensorValues			sensorValue;
@@ -396,7 +398,8 @@ void dashTask() {
 	ConfirmationMsgs		confMsg;
 	ModuleError				error;
 	ParameterValue			parameter;
-
+	
+	
 	initSensorRealValueStruct(&sensorPhysicalValue);
 	initSensorValueStruct(&sensorValue);
 	initStatusStruct(&status);
@@ -443,7 +446,7 @@ void dashTask() {
 		getDashMessages(&parameter,&confMsg,&error,&sensorValue, &status,&sensorPhysicalValue);
 		//xSemaphoreTake(xButtonStruct, portMAX_DELAY);
 		
-		//dashboardControlFunction(&btn,&error,&sensorValue,&status,&confMsg, &deviceState,&parameter,&sensorPhysicalValue);
+		dashboardControlFunction(&btn,&error,&sensorValue,&status,&confMsg, &deviceState,&parameter,&sensorPhysicalValue);
 		//xSemaphoreGive(xButtonStruct);
 		//vTaskDelay(35/portTICK_RATE_MS);
 		//vTaskDelayUntil(&xLastWakeTime,150/portTICK_RATE_MS);
@@ -520,10 +523,10 @@ static void dashboardControlFunction(Buttons *btn, ModuleError *error, SensorVal
 		
 		break;
 		case MAIN_SCREEN:
-		if ((menuUpdate.update_menu == true) ) {
+		//if ((menuUpdate.update_menu == true) ) {
 			menuUpdate.update_menu = false;
 			DrawMainScreen(sensorPhysicalValue, deviceState);
-		}
+		//}
 		break;
 		case MAIN_MENU:
 		if ((menuUpdate.update_menu == true) ) {

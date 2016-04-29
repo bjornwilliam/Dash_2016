@@ -190,15 +190,6 @@
     <Compile Include="Dash_drivers\high_voltage_symbol.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Dash_drivers\interrupt\interrupt.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\interrupt\interrupt_sam_nvic.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\interrupt\interrupt_sam_nvic.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="Dash_drivers\IO_DashInit.c">
       <SubType>compile</SubType>
     </Compile>
@@ -217,82 +208,100 @@
     <Compile Include="Dash_drivers\revolve_logo.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Dash_drivers\SD\ccsbcs.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\compiler.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\conf_access.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\conf_fatfs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\conf_sd_mmc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\ctrl_access.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\ctrl_access.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\definitions.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\diskio.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\diskio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\ff.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\ff.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\ffconf.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\hsmci.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\hsmci.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\integer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\interrupt.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\interrupt_sam_nvic.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\interrupt_sam_nvic.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\mrepeat.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\parts.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\preprocessor.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\sd_handler.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\sd_mmc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\sd_mmc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\sd_mmc_mem.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\sd_mmc_mem.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\sd_mmc_protocol.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\stringz.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Dash_drivers\SD\tpaste.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Dash_drivers\sd_handler.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Dash_drivers\sd_handler.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\compiler.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\conf_access.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\conf_sd_mmc.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\ctrl_access.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\ctrl_access.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\fat\diskio.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\fat\diskio.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\fat\ff.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\fat\ff.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\fat\ffconf.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\fat\integer.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\hsmci.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\hsmci.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\parts.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\preprocessor\mrepeat.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\preprocessor\preprocessor.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\preprocessor\stringz.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\preprocessor\tpaste.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\sd_handler.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\sd_mmc.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\sd_mmc.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\sd_mmc_mem.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\sd_mmc_mem.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\sd_mmc\sd_mmc_protocol.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Dash_drivers\status_codes.h">
@@ -602,11 +611,7 @@
   <ItemGroup>
     <Folder Include="Dash_drivers\" />
     <Folder Include="Dash_drivers\FT800\" />
-    <Folder Include="Dash_drivers\interrupt\" />
-    <Folder Include="Dash_drivers\sd_mmc\" />
-    <Folder Include="Dash_drivers\sd_mmc\fat\" />
-    <Folder Include="Dash_drivers\sd_mmc\fat\option\" />
-    <Folder Include="Dash_drivers\sd_mmc\preprocessor\" />
+    <Folder Include="Dash_drivers\SD\" />
     <Folder Include="Device_Startup\" />
     <Folder Include="revolve_can_definitions_16\" />
     <Folder Include="same70-base_16\" />

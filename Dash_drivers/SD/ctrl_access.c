@@ -60,7 +60,7 @@
 //_____ I N C L U D E S ____________________________________________________
 
 //#include "compiler.h"
-#include "preprocessor/preprocessor.h"
+#include "preprocessor.h"
 #ifdef FREERTOS_USED
 #include "FreeRTOS.h"
 #include "semphr.h"
@@ -609,7 +609,7 @@ Ctrl_status ram_2_memory(U8 lun, U32 addr, const void *ram, U16 nb_sectors){
 Lun_usb_ram_2_mem(addr, ram);
 #else
 					CTRL_FAIL;
-#endif
+#endif*/
 	memory_stop_write_action();
 
 	Ctrl_access_unlock();

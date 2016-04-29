@@ -1,24 +1,249 @@
+/**
+ * \file
+ *
+ * \brief Commonly used includes, types and macros.
+ *
+ * Copyright (c) 2010-2015 Atmel Corporation. All rights reserved.
+ *
+ * \asf_license_start
+ *
+ * \page License
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * 3. The name of Atmel may not be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * 4. This software may only be redistributed and used in connection with an
+ *    Atmel microcontroller product.
+ *
+ * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
+ * EXPRESSLY AND SPECIFICALLY DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * \asf_license_stop
+ *
+ */
+/*
+ * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
+ */
+
 #ifndef UTILS_COMPILER_H
 #define UTILS_COMPILER_H
 
+/**
+ * \defgroup group_sam_utils Compiler abstraction layer and code utilities
+ *
+ * Compiler abstraction layer and code utilities for AT91SAM.
+ * This module provides various abstraction layers and utilities to make code compatible between different compilers.
+ *
+ * \{
+ */
+#include <stddef.h>
+
+#if (defined __ICCARM__)
+#  include <intrinsics.h>
+#endif
+
+#include "parts.h"
+#include "preprocessor.h"
+
+//#include <io.h>
+
+//_____ D E C L A R A T I O N S ____________________________________________
+
+#ifndef __ASSEMBLY__ // Not defined for assembling.
 
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#define DISABLE   0
-#define ENABLE    1
-#ifndef __cplusplus
-#if !defined(__bool_true_false_are_defined)
-#define false     0
-#define true      1
-#endif
-#endif
-#define PASS      0
-#define FAIL      1
-#define LOW       0
-#define HIGH      1
 
+#ifdef __ICCARM__
+/*! \name Compiler Keywords
+ *
+ * Port of some keywords from GCC to IAR Embedded Workbench.
+ */
+//! @{
+#define __asm__             asm
+#define __inline__          inline
+#define __volatile__
+//! @}
+
+#endif
+
+#define FUNC_PTR                            void *
+/**
+ * \def UNUSED
+ * \brief Marking \a v as a unused parameter or value.
+ */
+#define UNUSED(v)          (void)(v)
+
+/**
+ * \def unused
+ * \brief Marking \a v as a unused parameter or value.
+ */
+#define unused(v)          do { (void)(v); } while(0)
+
+/**
+ * \def barrier
+ * \brief Memory barrier
+ */
+#define barrier()          __DMB()
+
+/**
+ * \brief Emit the compiler pragma \a arg.
+ *
+ * \param arg The pragma directive as it would appear after \e \#pragma
+ * (i.e. not stringified).
+ */
+#define COMPILER_PRAGMA(arg)            _Pragma(#arg)
+
+/**
+ * \def COMPILER_PACK_SET(alignment)
+ * \brief Set maximum alignment for subsequent struct and union
+ * definitions to \a alignment.
+ */
+#define COMPILER_PACK_SET(alignment)   COMPILER_PRAGMA(pack(alignment))
+
+/**
+ * \def COMPILER_PACK_RESET()
+ * \brief Set default alignment for subsequent struct and union
+ * definitions.
+ */
+#define COMPILER_PACK_RESET()          COMPILER_PRAGMA(pack())
+
+
+/**
+ * \brief Set aligned boundary.
+ */
+#if (defined __GNUC__) || (defined __CC_ARM)
+#   define COMPILER_ALIGNED(a)    __attribute__((__aligned__(a)))
+#elif (defined __ICCARM__)
+#   define COMPILER_ALIGNED(a)    COMPILER_PRAGMA(data_alignment = a)
+#endif
+
+/**
+ * \brief Set word-aligned boundary.
+ */
+#if (defined __GNUC__) || defined(__CC_ARM)
+#define COMPILER_WORD_ALIGNED    __attribute__((__aligned__(4)))
+#elif (defined __ICCARM__)
+#define COMPILER_WORD_ALIGNED    COMPILER_PRAGMA(data_alignment = 4)
+#endif
+
+/**
+ * \def __always_inline
+ * \brief The function should always be inlined.
+ *
+ * This annotation instructs the compiler to ignore its inlining
+ * heuristics and inline the function no matter how big it thinks it
+ * becomes.
+ */
+#if defined(__CC_ARM)
+#   define __always_inline   __forceinline
+#elif (defined __GNUC__)
+#	define __always_inline   inline __attribute__((__always_inline__))
+#elif (defined __ICCARM__)
+#	define __always_inline   _Pragma("inline=forced")
+#endif
+
+/**
+ * \def __no_inline
+ * \brief The function should not be inlined.
+ *
+ * This annotation instructs the compiler to ignore its inlining
+ * heuristics and not inline the function.
+ */
+#if defined(__CC_ARM)
+#   define __no_inline   __attribute__((noinline))
+#elif (defined __GNUC__)
+#	define __no_inline   __attribute__((__noinline__))
+#elif (defined __ICCARM__)
+#	define __no_inline   _Pragma("inline=never")
+#endif
+
+/*! \brief This macro is used to test fatal errors.
+ *
+ * The macro tests if the expression is false. If it is, a fatal error is
+ * detected and the application hangs up. If TEST_SUITE_DEFINE_ASSERT_MACRO
+ * is defined, a unit test version of the macro is used, to allow execution
+ * of further tests after a false expression.
+ *
+ * \param expr  Expression to evaluate and supposed to be nonzero.
+ */
+#if defined(_ASSERT_ENABLE_)
+#  if defined(TEST_SUITE_DEFINE_ASSERT_MACRO)
+     // Assert() is defined in unit_test/suite.h
+#    include "unit_test/suite.h"
+#  else
+#undef TEST_SUITE_DEFINE_ASSERT_MACRO
+#    define Assert(expr) \
+	{\
+		if (!(expr)) while (true);\
+	}
+#  endif
+#else
+#  define Assert(expr) ((void) 0)
+#endif
+
+/* Define WEAK attribute */
+#if defined   ( __CC_ARM   ) /* Keil µVision 4 */
+#   define WEAK __attribute__ ((weak))
+#elif defined ( __ICCARM__ ) /* IAR Ewarm 5.41+ */
+#   define WEAK __weak
+#elif defined (  __GNUC__  ) /* GCC CS3 2009q3-68 */
+#   define WEAK __attribute__ ((weak))
+#endif
+
+/* Define NO_INIT attribute */
+#if defined   ( __CC_ARM   )
+#   define NO_INIT __attribute__((zero_init))
+#elif defined ( __ICCARM__ )
+#   define NO_INIT __no_init
+#elif defined (  __GNUC__  )
+#   define NO_INIT __attribute__((section(".no_init")))
+#endif
+
+/* Define RAMFUNC attribute */
+#if defined   ( __CC_ARM   ) /* Keil µVision 4 */
+#   define RAMFUNC __attribute__ ((section(".ramfunc")))
+#elif defined ( __ICCARM__ ) /* IAR Ewarm 5.41+ */
+#   define RAMFUNC __ramfunc
+#elif defined (  __GNUC__  ) /* GCC CS3 2009q3-68 */
+#   define RAMFUNC __attribute__ ((section(".ramfunc")))
+#endif
+
+/* Define OPTIMIZE_HIGH attribute */
+#if defined   ( __CC_ARM   ) /* Keil µVision 4 */
+#   define OPTIMIZE_HIGH _Pragma("O3") 
+#elif defined ( __ICCARM__ ) /* IAR Ewarm 5.41+ */
+#   define OPTIMIZE_HIGH _Pragma("optimize=high")
+#elif defined (  __GNUC__  ) /* GCC CS3 2009q3-68 */
+#   define OPTIMIZE_HIGH __attribute__((optimize(s)))
+#endif
+
+#include "interrupt.h"
+
+/*! \name Usual Types
+ */
+//! @{
 typedef unsigned char           Bool; //!< Boolean.
 #ifndef __cplusplus
 #if !defined(__bool_true_false_are_defined)
@@ -48,7 +273,208 @@ typedef uint32_t                iram_size_t;
 //! @{
 typedef bool                Status_bool_t;  //!< Boolean status.
 typedef U8                  Status_t;       //!< 8-bit-coded status.
+//! @}
 
+
+/*! \name Aliasing Aggregate Types
+ */
+//! @{
+
+//! 16-bit union.
+typedef union
+{
+  S16 s16   ;
+  U16 u16   ;
+  S8  s8 [2];
+  U8  u8 [2];
+} Union16;
+
+//! 32-bit union.
+typedef union
+{
+  S32 s32   ;
+  U32 u32   ;
+  S16 s16[2];
+  U16 u16[2];
+  S8  s8 [4];
+  U8  u8 [4];
+} Union32;
+
+//! 64-bit union.
+typedef union
+{
+  S64 s64   ;
+  U64 u64   ;
+  S32 s32[2];
+  U32 u32[2];
+  S16 s16[4];
+  U16 u16[4];
+  S8  s8 [8];
+  U8  u8 [8];
+} Union64;
+
+//! Union of pointers to 64-, 32-, 16- and 8-bit unsigned integers.
+typedef union
+{
+  S64 *s64ptr;
+  U64 *u64ptr;
+  S32 *s32ptr;
+  U32 *u32ptr;
+  S16 *s16ptr;
+  U16 *u16ptr;
+  S8  *s8ptr ;
+  U8  *u8ptr ;
+} UnionPtr;
+
+//! Union of pointers to volatile 64-, 32-, 16- and 8-bit unsigned integers.
+typedef union
+{
+  volatile S64 *s64ptr;
+  volatile U64 *u64ptr;
+  volatile S32 *s32ptr;
+  volatile U32 *u32ptr;
+  volatile S16 *s16ptr;
+  volatile U16 *u16ptr;
+  volatile S8  *s8ptr ;
+  volatile U8  *u8ptr ;
+} UnionVPtr;
+
+//! Union of pointers to constant 64-, 32-, 16- and 8-bit unsigned integers.
+typedef union
+{
+  const S64 *s64ptr;
+  const U64 *u64ptr;
+  const S32 *s32ptr;
+  const U32 *u32ptr;
+  const S16 *s16ptr;
+  const U16 *u16ptr;
+  const S8  *s8ptr ;
+  const U8  *u8ptr ;
+} UnionCPtr;
+
+//! Union of pointers to constant volatile 64-, 32-, 16- and 8-bit unsigned integers.
+typedef union
+{
+  const volatile S64 *s64ptr;
+  const volatile U64 *u64ptr;
+  const volatile S32 *s32ptr;
+  const volatile U32 *u32ptr;
+  const volatile S16 *s16ptr;
+  const volatile U16 *u16ptr;
+  const volatile S8  *s8ptr ;
+  const volatile U8  *u8ptr ;
+} UnionCVPtr;
+
+//! Structure of pointers to 64-, 32-, 16- and 8-bit unsigned integers.
+typedef struct
+{
+  S64 *s64ptr;
+  U64 *u64ptr;
+  S32 *s32ptr;
+  U32 *u32ptr;
+  S16 *s16ptr;
+  U16 *u16ptr;
+  S8  *s8ptr ;
+  U8  *u8ptr ;
+} StructPtr;
+
+//! Structure of pointers to volatile 64-, 32-, 16- and 8-bit unsigned integers.
+typedef struct
+{
+  volatile S64 *s64ptr;
+  volatile U64 *u64ptr;
+  volatile S32 *s32ptr;
+  volatile U32 *u32ptr;
+  volatile S16 *s16ptr;
+  volatile U16 *u16ptr;
+  volatile S8  *s8ptr ;
+  volatile U8  *u8ptr ;
+} StructVPtr;
+
+//! Structure of pointers to constant 64-, 32-, 16- and 8-bit unsigned integers.
+typedef struct
+{
+  const S64 *s64ptr;
+  const U64 *u64ptr;
+  const S32 *s32ptr;
+  const U32 *u32ptr;
+  const S16 *s16ptr;
+  const U16 *u16ptr;
+  const S8  *s8ptr ;
+  const U8  *u8ptr ;
+} StructCPtr;
+
+//! Structure of pointers to constant volatile 64-, 32-, 16- and 8-bit unsigned integers.
+typedef struct
+{
+  const volatile S64 *s64ptr;
+  const volatile U64 *u64ptr;
+  const volatile S32 *s32ptr;
+  const volatile U32 *u32ptr;
+  const volatile S16 *s16ptr;
+  const volatile U16 *u16ptr;
+  const volatile S8  *s8ptr ;
+  const volatile U8  *u8ptr ;
+} StructCVPtr;
+
+//! @}
+
+#endif  // #ifndef __ASSEMBLY__
+
+/*! \name Usual Constants
+ */
+//! @{
+#define DISABLE   0
+#define ENABLE    1
+#ifndef __cplusplus
+#if !defined(__bool_true_false_are_defined)
+#define false     0
+#define true      1
+#endif
+#endif
+#define PASS      0
+#define FAIL      1
+#define LOW       0
+#define HIGH      1
+//! @}
+
+
+#ifndef __ASSEMBLY__ // not for assembling.
+
+//! \name Optimization Control
+//@{
+
+/**
+ * \def likely(exp)
+ * \brief The expression \a exp is likely to be true
+ */
+#ifndef likely
+#   define likely(exp)    (exp)
+#endif
+
+/**
+ * \def unlikely(exp)
+ * \brief The expression \a exp is unlikely to be true
+ */
+#ifndef unlikely
+#   define unlikely(exp)  (exp)
+#endif
+
+/**
+ * \def is_constant(exp)
+ * \brief Determine if an expression evaluates to a constant value.
+ *
+ * \param exp Any expression
+ *
+ * \return true if \a exp is constant, false otherwise.
+ */
+#if (defined __GNUC__) || (defined __CC_ARM)
+#   define is_constant(exp)       __builtin_constant_p(exp)
+#else
+#   define is_constant(exp)       (0)
+#endif
+
+//! @}
 
 /*! \name Bit-Field Handling
  */
@@ -130,6 +556,28 @@ typedef U8                  Status_t;       //!< 8-bit-coded status.
 #define Wr_bitfield(lvalue, mask, bitfield) (Wr_bits(lvalue, mask, (U32)(bitfield) << ctz(mask)))
 
 //! @}
+
+
+/*! \name Zero-Bit Counting
+ *
+ * Under GCC, __builtin_clz and __builtin_ctz behave like macros when
+ * applied to constant expressions (values known at compile time), so they are
+ * more optimized than the use of the corresponding assembly instructions and
+ * they can be used as constant expressions e.g. to initialize objects having
+ * static storage duration, and like the corresponding assembly instructions
+ * when applied to non-constant expressions (values unknown at compile time), so
+ * they are more optimized than an assembly periphrasis. Hence, clz and ctz
+ * ensure a possible and optimized behavior for both constant and non-constant
+ * expressions.
+ */
+//! @{
+
+/*! \brief Counts the leading zero bits of the given value considered as a 32-bit integer.
+ *
+ * \param u Value of which to count the leading zero bits.
+ *
+ * \return The count of leading zero bits in \a u.
+ */
 #if (defined __GNUC__) || (defined __CC_ARM)
 #   define clz(u)              __builtin_clz(u)
 #elif (defined __ICCARM__)
@@ -213,77 +661,61 @@ typedef U8                  Status_t;       //!< 8-bit-coded status.
                                 (u) & (1ul << 31) ? 31 : \
                                 32)
 #endif
-/**
- * \brief Emit the compiler pragma \a arg.
+
+//! @}
+
+
+/*! \name Bit Reversing
+ */
+//! @{
+
+/*! \brief Reverses the bits of \a u8.
  *
- * \param arg The pragma directive as it would appear after \e \#pragma
- * (i.e. not stringified).
- */
-#define COMPILER_PRAGMA(arg)            _Pragma(#arg)
-
-/**
- * \def COMPILER_PACK_SET(alignment)
- * \brief Set maximum alignment for subsequent struct and union
- * definitions to \a alignment.
- */
-#define COMPILER_PACK_SET(alignment)   COMPILER_PRAGMA(pack(alignment))
-
-/**
- * \def COMPILER_PACK_RESET()
- * \brief Set default alignment for subsequent struct and union
- * definitions.
- */
-#define COMPILER_PACK_RESET()          COMPILER_PRAGMA(pack())
-
-/**
- * \brief Set aligned boundary.
- */
-#if (defined __GNUC__) || (defined __CC_ARM)
-#   define COMPILER_ALIGNED(a)    __attribute__((__aligned__(a)))
-#elif (defined __ICCARM__)
-#   define COMPILER_ALIGNED(a)    COMPILER_PRAGMA(data_alignment = a)
-#endif
-
-/**
- * \brief Set word-aligned boundary.
- */
-#if (defined __GNUC__) || defined(__CC_ARM)
-#define COMPILER_WORD_ALIGNED    __attribute__((__aligned__(4)))
-#elif (defined __ICCARM__)
-#define COMPILER_WORD_ALIGNED    COMPILER_PRAGMA(data_alignment = 4)
-#endif
-
-/**
- * \def __always_inline
- * \brief The function should always be inlined.
+ * \param u8  U8 of which to reverse the bits.
  *
- * This annotation instructs the compiler to ignore its inlining
- * heuristics and inline the function no matter how big it thinks it
- * becomes.
+ * \return Value resulting from \a u8 with reversed bits.
  */
-// #if defined(__CC_ARM)
-// #   define __always_inline   __forceinline
-// #elif (defined __GNUC__)
-// #	define __always_inline   inline __attribute__((__always_inline__))
-// #elif (defined __ICCARM__)
-// #	define __always_inline   _Pragma("inline=forced")
-// #endif
+#define bit_reverse8(u8)    ((U8)(bit_reverse32((U8)(u8)) >> 24))
 
-/**
- * \def __no_inline
- * \brief The function should not be inlined.
+/*! \brief Reverses the bits of \a u16.
  *
- * This annotation instructs the compiler to ignore its inlining
- * heuristics and not inline the function.
+ * \param u16 U16 of which to reverse the bits.
+ *
+ * \return Value resulting from \a u16 with reversed bits.
  */
-#if defined(__CC_ARM)
-#   define __no_inline   __attribute__((noinline))
-#elif (defined __GNUC__)
-#	define __no_inline   __attribute__((__noinline__))
-#elif (defined __ICCARM__)
-#	define __no_inline   _Pragma("inline=never")
-#endif
+#define bit_reverse16(u16)  ((U16)(bit_reverse32((U16)(u16)) >> 16))
 
+/*! \brief Reverses the bits of \a u32.
+ *
+ * \param u32 U32 of which to reverse the bits.
+ *
+ * \return Value resulting from \a u32 with reversed bits.
+ */
+#define bit_reverse32(u32)   __RBIT(u32)
+
+/*! \brief Reverses the bits of \a u64.
+ *
+ * \param u64 U64 of which to reverse the bits.
+ *
+ * \return Value resulting from \a u64 with reversed bits.
+ */
+#define bit_reverse64(u64)  ((U64)(((U64)bit_reverse32((U64)(u64) >> 32)) |\
+                                   ((U64)bit_reverse32((U64)(u64)) << 32)))
+
+//! @}
+
+
+/*! \name Alignment
+ */
+//! @{
+
+/*! \brief Tests alignment of the number \a val with the \a n boundary.
+ *
+ * \param val Input value.
+ * \param n   Boundary.
+ *
+ * \return \c 1 if the number \a val is aligned with the \a n boundary, else \c 0.
+ */
 #define Test_align(val, n     ) (!Tst_bits( val, (n) - 1     )   )
 
 /*! \brief Gets alignment of the number \a val with respect to the \a n boundary.
@@ -394,6 +826,21 @@ typedef U8                  Status_t;       //!< 8-bit-coded status.
  * \note More optimized if only used with values unknown at compile time.
  */
 #define max(a, b)   Max(a, b)
+
+//! @}
+
+
+/*! \brief Calls the routine at address \a addr.
+ *
+ * It generates a long call opcode.
+ *
+ * For example, `Long_call(0x80000000)' generates a software reset on a UC3 if
+ * it is invoked from the CPU supervisor mode.
+ *
+ * \param addr  Address of the routine to call.
+ *
+ * \note It may be used as a long jump opcode in some special cases.
+ */
 #define Long_call(addr)                   ((*(void (*)(void))(addr))())
 
 
@@ -465,6 +912,7 @@ typedef U8                  Status_t;       //!< 8-bit-coded status.
 #define  BE32_TO_CPU(x) swap32(x)
 #define  CPU_TO_BE32(x) swap32(x)
 //! @}
+
 
 /*! \name Endianism Conversion
  *
@@ -550,6 +998,25 @@ typedef U8                  Status_t;       //!< 8-bit-coded status.
                            ((U64)swap32((U64)(u64)) << 32)))
 #endif
 
+//! @}
+
+
+/*! \name Target Abstraction
+ */
+//! @{
+
+#define _GLOBEXT_           extern      //!< extern storage-class specifier.
+#define _CONST_TYPE_        const       //!< const type qualifier.
+#define _MEM_TYPE_SLOW_                 //!< Slow memory type.
+#define _MEM_TYPE_MEDFAST_              //!< Fairly fast memory type.
+#define _MEM_TYPE_FAST_                 //!< Fast memory type.
+
+typedef U8                  Byte;       //!< 8-bit unsigned integer.
+
+#define memcmp_ram2ram      memcmp      //!< Target-specific memcmp of RAM to RAM.
+#define memcmp_code2ram     memcmp      //!< Target-specific memcmp of RAM to NVRAM.
+#define memcpy_ram2ram      memcpy      //!< Target-specific memcpy from RAM to RAM.
+#define memcpy_code2ram     memcpy      //!< Target-specific memcpy from NVRAM to RAM.
 
 #define LSB0(u32)           LSB0W(u32)  //!< Least significant byte of 1st rank of \a u32.
 #define LSB1(u32)           LSB1W(u32)  //!< Least significant byte of 2nd rank of \a u32.
@@ -560,17 +1027,170 @@ typedef U8                  Status_t;       //!< 8-bit-coded status.
 #define MSB1(u32)           MSB1W(u32)  //!< Most significant byte of 2nd rank of \a u32.
 #define MSB0(u32)           MSB0W(u32)  //!< Most significant byte of 1st rank of \a u32.
 
+//! @}
 
 /**
- * \def UNUSED
- * \brief Marking \a v as a unused parameter or value.
+ * \brief Calculate \f$ \left\lceil \frac{a}{b} \right\rceil \f$ using
+ * integer arithmetic.
+ *
+ * \param a An integer
+ * \param b Another integer
+ *
+ * \return (\a a / \a b) rounded up to the nearest integer.
  */
-#define UNUSED(v)          (void)(v)
+#define div_ceil(a, b)      (((a) + (b) - 1) / (b))
+
+#endif  // #ifndef __ASSEMBLY__
+
+
+#if defined(__ICCARM__)
+#define SHORTENUM           __packed
+#elif defined(__GNUC__)
+#define SHORTENUM           __attribute__((packed))
+#endif
+
+/* No operation */
+#if defined(__ICCARM__)
+#define nop()               __no_operation()
+#elif defined(__GNUC__)
+#define nop()               (__NOP())
+#endif
+
+#define FLASH_DECLARE(x)  const x
+#define FLASH_EXTERN(x) extern const x
+#define PGM_READ_BYTE(x) *(x)
+#define PGM_READ_WORD(x) *(x)
+#define PGM_READ_DWORD(x) *(x)
+#define MEMCPY_ENDIAN memcpy
+#define PGM_READ_BLOCK(dst, src, len) memcpy((dst), (src), (len))
+
+/*Defines the Flash Storage for the request and response of MAC*/
+#define CMD_ID_OCTET    (0)
+
+/* Converting of values from CPU endian to little endian. */
+#define CPU_ENDIAN_TO_LE16(x)   (x)
+#define CPU_ENDIAN_TO_LE32(x)   (x)
+#define CPU_ENDIAN_TO_LE64(x)   (x)
+
+/* Converting of values from little endian to CPU endian. */
+#define LE16_TO_CPU_ENDIAN(x)   (x)
+#define LE32_TO_CPU_ENDIAN(x)   (x)
+#define LE64_TO_CPU_ENDIAN(x)   (x)
+
+/* Converting of constants from little endian to CPU endian. */
+#define CLE16_TO_CPU_ENDIAN(x)  (x)
+#define CLE32_TO_CPU_ENDIAN(x)  (x)
+#define CLE64_TO_CPU_ENDIAN(x)  (x)
+
+/* Converting of constants from CPU endian to little endian. */
+#define CCPU_ENDIAN_TO_LE16(x)  (x)
+#define CCPU_ENDIAN_TO_LE32(x)  (x)
+#define CCPU_ENDIAN_TO_LE64(x)  (x)
+
+#define ADDR_COPY_DST_SRC_16(dst, src)  ((dst) = (src))
+#define ADDR_COPY_DST_SRC_64(dst, src)  ((dst) = (src))
 
 /**
- * \def unused
- * \brief Marking \a v as a unused parameter or value.
+ * @brief Converts a 64-Bit value into  a 8 Byte array
+ *
+ * @param[in] value 64-Bit value
+ * @param[out] data Pointer to the 8 Byte array to be updated with 64-Bit value
+ * @ingroup apiPalApi
  */
-#define unused(v)          do { (void)(v); } while(0)
+static inline void convert_64_bit_to_byte_array(uint64_t value, uint8_t *data)
+{
+    uint8_t val_index = 0;
+
+    while (val_index < 8)
+    {
+        data[val_index++] = value & 0xFF;
+        value = value >> 8;
+    }
+}
+
+/**
+ * @brief Converts a 16-Bit value into  a 2 Byte array
+ *
+ * @param[in] value 16-Bit value
+ * @param[out] data Pointer to the 2 Byte array to be updated with 16-Bit value
+ * @ingroup apiPalApi
+ */
+static inline void convert_16_bit_to_byte_array(uint16_t value, uint8_t *data)
+{
+    data[0] = value & 0xFF;
+    data[1] = (value >> 8) & 0xFF;
+}
+
+/* Converts a 16-Bit value into a 2 Byte array */
+static inline void convert_spec_16_bit_to_byte_array(uint16_t value, uint8_t *data)
+{
+    data[0] = value & 0xFF;
+    data[1] = (value >> 8) & 0xFF;
+}
+
+/* Converts a 16-Bit value into a 2 Byte array */
+static inline void convert_16_bit_to_byte_address(uint16_t value, uint8_t *data)
+{
+    data[0] = value & 0xFF;
+    data[1] = (value >> 8) & 0xFF;
+}
+
+/*
+ * @brief Converts a 2 Byte array into a 16-Bit value
+ *
+ * @param data Specifies the pointer to the 2 Byte array
+ *
+ * @return 16-Bit value
+ * @ingroup apiPalApi
+ */
+static inline uint16_t convert_byte_array_to_16_bit(uint8_t *data)
+{
+    return (data[0] | ((uint16_t)data[1] << 8));
+}
+
+/* Converts a 8 Byte array into a 32-Bit value */
+static inline uint32_t convert_byte_array_to_32_bit(uint8_t *data)
+{
+	union
+	{
+		uint32_t u32;
+		uint8_t u8[8];
+	}long_addr;
+	uint8_t index;
+	for (index = 0; index < 4; index++)
+	{
+		long_addr.u8[index] = *data++;
+	}
+	return long_addr.u32;
+}
+
+/**
+ * @brief Converts a 8 Byte array into a 64-Bit value
+ *
+ * @param data Specifies the pointer to the 8 Byte array
+ *
+ * @return 64-Bit value
+ * @ingroup apiPalApi
+ */
+static inline uint64_t convert_byte_array_to_64_bit(uint8_t *data)
+{
+    union
+    {
+        uint64_t u64;
+        uint8_t u8[8];
+    } long_addr;
+
+    uint8_t val_index;
+
+    for (val_index = 0; val_index < 8; val_index++)
+    {
+        long_addr.u8[val_index] = *data++;
+    }
+
+    return long_addr.u64;
+}
+/**
+ * \}
+ */
 
 #endif /* UTILS_COMPILER_H */

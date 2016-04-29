@@ -46,7 +46,7 @@
 #ifndef UTILS_INTERRUPT_H
 #define UTILS_INTERRUPT_H
 
-#include "../sd_mmc/parts.h"
+#include "parts.h"
 
 #if XMEGA || MEGA || TINY
 #  include "interrupt/interrupt_avr8.h"

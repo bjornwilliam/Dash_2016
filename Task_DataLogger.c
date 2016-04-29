@@ -4,9 +4,9 @@
 #include "same70-base_16/RevolveDrivers/pio.h"
 
 
-#include "Dash_drivers/sd_mmc/sd_mmc.h"
-#include "Dash_drivers/sd_mmc/fat/ff.h"
-#include "Dash_drivers/sd_mmc/ctrl_access.h"
+#include "Dash_drivers/SD/sd_mmc.h"
+#include "Dash_drivers/SD/ff.h"
+#include "Dash_drivers/SD/ctrl_access.h"
 #include "Dash_drivers/mcanFreeRTOSWrapper.h"
 
 //#include "Task_USBMSC.h"
@@ -123,16 +123,16 @@ void dataLoggerTask() {
 				vTaskDelay(40/portTICK_RATE_MS);
 			break;		
 			case DATALOGGER_LOGGING:
-				if ( (pio_readPin(DETECT_USB_PIO,DETECT_USB_PIN) == 1 )  && (dataLoggerHandle == xSemaphoreGetMutexHolder(file_access_mutex)) ) {
-					dataloggerState = DATALOGGER_USB_CONNECTED;
-					f_truncate(&file_object);
-					f_close(&file_object);
-					xSemaphoreGive(file_access_mutex);
-					// Disable CAN interrupts if USB is connected
-					//can_disableRXInterrupt(CAN0_IRQn);
-					//can_disableRXInterrupt(CAN1_IRQn);
-					break;
-				}
+// 				if ( (pio_readPin(DETECT_USB_PIO,DETECT_USB_PIN) == 1 )  && (dataLoggerHandle == xSemaphoreGetMutexHolder(file_access_mutex)) ) {
+// 					dataloggerState = DATALOGGER_USB_CONNECTED;
+// 					f_truncate(&file_object);
+// 					f_close(&file_object);
+// 					xSemaphoreGive(file_access_mutex);
+// 					// Disable CAN interrupts if USB is connected
+// 					//can_disableRXInterrupt(CAN0_IRQn);
+// 					//can_disableRXInterrupt(CAN1_IRQn);
+// 					break;
+// 				}
 				switch(currentCommand) {
 					case CLOSE_FILE:
 						offset = 0;

@@ -49,10 +49,7 @@
 
 //#include "compiler.h"
 #include "conf_sd_mmc.h"
-
-
 #include "../../same70-base_16/RevolveDrivers/pio.h"
-
 
 #ifdef __cplusplus
 extern "C" {

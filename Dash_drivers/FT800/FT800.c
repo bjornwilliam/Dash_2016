@@ -55,7 +55,7 @@ t16_t spi_rd16() {
 
 void host_command(ft_uint8_t command) {
 	
-	uint16_t tbuffer[3] = {command, 0x00, 0};
+	uint16_t tbuffer[3] = {command, 0, 0};
 	uint16_t rbuffer[3];
 	spi_transceive(tbuffer, rbuffer, 3, NPCS3);
 	/*
@@ -87,7 +87,7 @@ void wr16(unsigned long addr, ft_uint16_t value) {
 	spi_transceive(tbuffer, rbuffer, 5, NPCS3);
 }
 void wr32(unsigned long addr, ft_uint32_t value) {
-	uint16_t tbuffer[7] = {(0x80 | (addr >> 16)) & 0xFF,  (addr >> 8) & 0xFF, addr & 0xFF, value & 0xFF, ((value >> 8) & 0x00FF),((value >> 16) & 0xFF) , ((value >> 24) & 0x00FF) };
+	uint16_t tbuffer[7] = {(0x80 | (addr >> 16)) & 0xFF,  (addr >> 8) & 0xFF, addr & 0xFF, value & 0xFF, ((value >> 8) & 0xFF),((value >> 16) & 0xFF) , ((value >> 24) & 0xFF) };
 	uint16_t rbuffer[7];
 	spi_transceive(tbuffer, rbuffer, 7, NPCS3);
 	

@@ -48,9 +48,9 @@ extern "C" {
 /**INDENT-ON**/
 /// @endcond
 
-#include "../compiler.h"
+#include "compiler.h"
 #include "diskio.h"
-#include "../ctrl_access.h"
+#include "ctrl_access.h"
 
 #include <string.h>
 #include <stdio.h>

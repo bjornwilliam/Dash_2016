@@ -43,7 +43,6 @@
 /*
  * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
-#include "hsmci.h"
 #include <stdint.h>
 #include <stdbool.h>
 //#include <asf.h>
@@ -51,7 +50,7 @@
 #include "sd_mmc_protocol.h"
 //#include "sysclk.h"
 #include "../../same70-base_16/RevolveDrivers/pmc.h"
-
+#include "hsmci.h"
 #include "../../same70-base_16/RevolveDrivers/xdmac.h"
 /**
  * \ingroup sam_drivers_hsmci
@@ -62,10 +61,34 @@
  */
 
 // Check configurations
-
-
-#define SD_MMC_HSMCI_MEM_CNT 1
-#define SD_MMC_HSMCI_SLOT_0_SIZE  4
+#if (!defined SD_MMC_HSMCI_MEM_CNT) || (SD_MMC_HSMCI_MEM_CNT == 0)
+#  warning SD_MMC_HSMCI_MEM_CNT must be defined in board.h file.
+#  define SD_MMC_HSMCI_MEM_CNT 1
+#endif
+#ifndef CONF_BOARD_SD_MMC_HSMCI
+#  warning CONF_BOARD_SD_MMC_HSMCI must be defined in conf_board.h file.
+#endif
+#if (SAM3XA)
+#  if (SD_MMC_HSMCI_MEM_CNT > 2)
+#    warning Wrong define SD_MMC_HSMCI_MEM_CNT in board.h,\
+     this part have 2 slots maximum on HSMCI.
+#  endif
+#else
+#  if (SD_MMC_HSMCI_MEM_CNT > 1)
+#    warning Wrong define SD_MMC_HSMCI_MEM_CNT in board.h,\
+     this part have 1 slots maximum on HSMCI.
+#  endif
+#endif
+#ifndef SD_MMC_HSMCI_SLOT_0_SIZE
+#  warning SD_MMC_HSMCI_SLOT_0_SIZE must be defined in board.h.
+#  define SD_MMC_HSMCI_SLOT_0_SIZE 1
+#endif
+#if (SD_MMC_HSMCI_MEM_CNT > 2)
+#  ifndef SD_MMC_HSMCI_SLOT_1_SIZE
+#    warning SD_MMC_HSMCI_SLOT_1_SIZE must be defined in board.h.
+#    define SD_MMC_HSMCI_SLOT_1_SIZE 1
+#  endif
+#endif
 
 // Enable debug information for SD/MMC SPI module
 #ifdef HSMCI_DEBUG
@@ -271,18 +294,18 @@ static bool hsmci_send_cmd_execute(uint32_t cmdr, sdmmc_cmd_def_t cmd,
 
 void hsmci_init(void)
 {
-	pmc_enable_periph_clk(ID_HSMCI);
-// #ifdef HSMCI_SR_DMADONE
-// 	// Enable clock for DMA controller
-// 	pmc_enable_periph_clk(ID_DMAC);
-// #endif
-// 
-// #if (SAMV70 || SAMV71 || SAME70 || SAMS70)
-// #ifdef HSMCI_DMA_DMAEN
-// 	// Enable clock for DMA controller
- 	pmc_enable_periph_clk(ID_XDMAC);
-// #endif
-// #endif
+	pmc_enable_periph_clk(18);
+#ifdef HSMCI_SR_DMADONE
+	// Enable clock for DMA controller
+	pmc_enable_periph_clk(ID_DMAC);
+#endif
+
+#if (SAMV70 || SAMV71 || SAME70 || SAMS70)
+#ifdef HSMCI_DMA_DMAEN
+	// Enable clock for DMA controller
+	pmc_enable_periph_clk(ID_XDMAC);
+#endif
+#endif
 
 	// Set the Data Timeout Register to 2 Mega Cycles
 	HSMCI->HSMCI_DTOR = HSMCI_DTOR_DTOMUL_1048576 | HSMCI_DTOR_DTOCYC(2);
@@ -337,6 +360,8 @@ void hsmci_select_device(uint8_t slot, uint32_t clock, uint8_t bus_width, bool h
 		hsmci_slot = HSMCI_SDCR_SDCSEL_SLOTB;
 		break;
 #endif
+	default:
+		Assert(false); // Slot number wrong
 	}
 
 	switch (bus_width) {
@@ -351,6 +376,9 @@ void hsmci_select_device(uint8_t slot, uint32_t clock, uint8_t bus_width, bool h
 	case 8:
 		hsmci_bus_width = HSMCI_SDCR_SDCBUS_8;
 		break;
+
+	default:
+		Assert(false); // Bus width wrong
 	}
 	HSMCI->HSMCI_SDCR = hsmci_slot | hsmci_bus_width;
 }
@@ -487,7 +515,7 @@ bool hsmci_adtc_start(sdmmc_cmd_def_t cmd, uint32_t arg, uint16_t block_size, ui
 		} else if (cmd & SDMMC_CMD_MULTI_BLOCK) {
 			cmdr |= HSMCI_CMDR_TRTYP_MULTIPLE;
 		} else {
-			//Assert(false); // Incorrect flags
+			Assert(false); // Incorrect flags
 		}
 	}
 	hsmci_transfert_pos = 0;
@@ -506,7 +534,7 @@ bool hsmci_read_word(uint32_t* value)
 {
 	uint32_t sr;
 
-	//Assert(((uint32_t)hsmci_block_size * hsmci_nb_block) > hsmci_transfert_pos);
+	Assert(((uint32_t)hsmci_block_size * hsmci_nb_block) > hsmci_transfert_pos);
 
 	// Wait data available
 	do {
@@ -546,7 +574,7 @@ bool hsmci_write_word(uint32_t value)
 {
 	uint32_t sr;
 
-	//Assert(((uint32_t)hsmci_block_size * hsmci_nb_block) > hsmci_transfert_pos);
+	Assert(((uint32_t)hsmci_block_size * hsmci_nb_block) > hsmci_transfert_pos);
 
 	// Wait data available
 	do {
@@ -579,19 +607,21 @@ bool hsmci_write_word(uint32_t value)
 			return false;
 		}
 	} while (!(sr & HSMCI_SR_NOTBUSY));
-	//Assert(HSMCI->HSMCI_SR & HSMCI_SR_FIFOEMPTY);
+	Assert(HSMCI->HSMCI_SR & HSMCI_SR_FIFOEMPTY);
 	return true;
 }
 
 //#define CONF_HSMCI_XDMAC_CHANNEL XDMAC_CHANNEL_HWID_HSMCI //need this in order for xdmac_channel_disable
-
 #define CONF_HSMCI_XDMAC_CHANNEL 0
+#if (SAMV70 || SAMV71 || SAME70 || SAMS70)
 #ifdef HSMCI_DMA_DMAEN
 bool hsmci_start_read_blocks(void *dest, uint16_t nb_block)
 {
 	struct XdmacChannelConfig p_cfg = {0, 0, 0, 0, 0, 0, 0, 0};
 	uint32_t nb_data;
 
+	Assert(nb_block);
+	Assert(dest);
 
 	xdmac_channel_disable(XDMAC, CONF_HSMCI_XDMAC_CHANNEL);
 
@@ -650,7 +680,8 @@ bool hsmci_start_write_blocks(const void *src, uint16_t nb_block)
 	struct XdmacChannelConfig p_cfg ={0, 0, 0, 0, 0, 0, 0, 0};
 	uint32_t nb_data;
 
-
+	Assert(nb_block);
+	Assert(dest);
 
 	xdmac_channel_disable(XDMAC, CONF_HSMCI_XDMAC_CHANNEL);
 
@@ -704,5 +735,5 @@ bool hsmci_wait_end_of_write_blocks(void)
 
 	return true;
 }
-
+#endif // HSMCI_DMA_DMAEN
 #endif
