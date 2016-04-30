@@ -48,7 +48,7 @@ QueueHandle_t xDashQueue = NULL;
 uint32_t can_send_to_datalogger_queue_failed = 0;
 
 
-#define DATALOGGER_QUEUE_SIZE 250
+#define DATALOGGER_QUEUE_SIZE 500
 
 struct SensorMessage {
 	struct Can_message_t CanMsg;

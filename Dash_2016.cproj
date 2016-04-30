@@ -40,7 +40,7 @@
       </framework-data>
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
-    <avrtoolserialnumber>J41800039223</avrtoolserialnumber>
+    <avrtoolserialnumber>J41800023887</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0xA1020E00</avrdeviceexpectedsignature>
     <com_atmel_avrdbg_tool_atmelice>
       <ToolOptions>
@@ -51,7 +51,7 @@
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.atmelice</ToolType>
-      <ToolNumber>J41800039223</ToolNumber>
+      <ToolNumber>J41800023887</ToolNumber>
       <ToolName>Atmel-ICE</ToolName>
     </com_atmel_avrdbg_tool_atmelice>
     <avrtoolinterface>SWD</avrtoolinterface>
@@ -176,6 +176,9 @@
     <Compile Include="Dash_drivers\FT800\FT800.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Dash_drivers\FT800\FT_GPU.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Dash_drivers\FT800\high_voltage_symbol.h">
       <SubType>compile</SubType>
     </Compile>
@@ -213,9 +216,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Dash_drivers\SD\conf_access.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Dash_drivers\SD\conf_fatfs.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Dash_drivers\SD\conf_sd_mmc.h">

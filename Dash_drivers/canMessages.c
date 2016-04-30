@@ -10,7 +10,11 @@
 #define TOGGLE_ALL_FANS_ID	7
 
 
-
+struct Can_message_t dataloggerRateMsg = {
+	.idType = STANDARD_CAN_ID,
+	.dataLength = 8,
+	.messageID = 200
+	};
 
 
 struct Can_message_t IAmAlive = {

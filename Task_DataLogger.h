@@ -44,8 +44,10 @@ extern QueueHandle_t xDataloggerStatusQueue;
 extern TaskHandle_t dataLoggerHandle;
 
 extern uint32_t file_size_byte_counter;
-extern uint32_t start_time;
-extern uint32_t	stop_time; 
+extern uint64_t start_time;
+extern uint64_t	stop_time; 
+extern uint64_t string_start_time;
+extern uint64_t string_stop_time;
 extern uint8_t number_of_files_sdcard;
 extern uint8_t SD_card_is_full; 
 

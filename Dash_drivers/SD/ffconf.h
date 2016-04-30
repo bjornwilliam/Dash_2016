@@ -6,7 +6,7 @@
 / the configuration options.
 /
 /----------------------------------------------------------------------------*/
-#include "conf_fatfs.h"
+//#include "conf_fatfs.h"
 
 #ifndef _FFCONF
 #define _FFCONF 6502	/* Revision ID */
@@ -50,7 +50,7 @@
 /* To enable f_forward function, set _USE_FORWARD to 1 and set _FS_TINY to 1. */
 
 
-#define	_USE_FASTSEEK	0	/* 0:Disable or 1:Enable */
+#define	_USE_FASTSEEK	1	/* 0:Disable or 1:Enable */
 /* To enable fast seek feature, set _USE_FASTSEEK to 1. */
 
 
@@ -59,7 +59,7 @@
 / Locale and Namespace Configurations
 /----------------------------------------------------------------------------*/
 
-#define _CODE_PAGE	932
+#define _CODE_PAGE	850
 /* The _CODE_PAGE specifies the OEM code page to be used on the target system.
 /  Incorrect setting of the code page can cause a file open failure.
 /

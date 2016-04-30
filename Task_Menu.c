@@ -379,6 +379,8 @@ static bool send_alive = false;
 //------------------------------------THE MAIN DASH FUNCTIONS-----------------------//
 //***********************************************************************************
 void dashTask() {
+	volatile UBaseType_t uxHighWaterMark_menu;
+	uxHighWaterMark_menu = uxTaskGetStackHighWaterMark( NULL);
 	TickType_t xLastWakeTime;
 	RTDSTimer				= xTimerCreate("RTDSTimer",	RTDS_DURATION_MS,		pdFALSE,	0,			vRTDSCallback);
 	LcTimer					= xTimerCreate("lcTimer",	1000/portTICK_RATE_MS,	pdTRUE,		(void *) 1,	vLcTimerCallback);
@@ -453,6 +455,15 @@ void dashTask() {
 			//can_sendMessage(MCAN0,IAmAlive);
 			mcan_freeRTOSSendMessage(MCAN0,IAmAlive);
 			mcan_freeRTOSSendMessage(MCAN1,IAmAlive);
+			uint32_t time = stop_time-start_time;
+			uint32_t string_time = string_stop_time-string_start_time;
+			uint32_t rate = (BUFFER_LENGTH*1000)/time; 
+			dataloggerRateMsg.data.u32[0] = string_time;
+			dataloggerRateMsg.data.u32[1] =  can_send_to_datalogger_queue_failed;
+			mcan_freeRTOSSendMessage(MCAN1, dataloggerRateMsg);
+			// Bruker rundt 200 mikrosekund på snprintf i datalogger
+			// Dette er per can melding.. '
+			//sprintf bruker 160 us mens snprintf på stort ubffer bruker 40..
 			send_alive = false;
 		}
 		// The delay for this task is given by the wait time specified in the queuereceive function
@@ -468,6 +479,7 @@ void dashTask() {
 		//xSemaphoreGive(xButtonStruct);
 		//vTaskDelay(35/portTICK_RATE_MS);
 		//vTaskDelayUntil(&xLastWakeTime,150/portTICK_RATE_MS);
+		//uxHighWaterMark_menu = uxTaskGetStackHighWaterMark( NULL);
 	}
 }
 

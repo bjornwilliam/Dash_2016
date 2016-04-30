@@ -4,7 +4,7 @@
 #include "../same70-base_16/RevolveDrivers/CAN/can.h"
 
 
-
+extern struct Can_message_t dataloggerRateMsg;
 
 extern struct Can_message_t IAmAlive;
 extern struct Can_message_t TorquePedalCalibrationMax ;

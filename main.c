@@ -36,7 +36,7 @@ int main(void)
 	//xPresetQueue				= xQueueCreate(2,sizeof(struct presetParameterStruct));	
 	
 	
-	status = xTaskCreate(dashTask,"dashTask",2500, NULL,  tskIDLE_PRIORITY + 3, NULL);
+	status = xTaskCreate(dashTask,"dashTask",500, NULL,  tskIDLE_PRIORITY + 3, NULL);
 	bytesremaining = xPortGetFreeHeapSize();
 	//status = xTaskCreate(usbMscTask,"MscTask",1000, NULL, tskIDLE_PRIORITY + 1, &mscTaskHandle);
 	bytesremaining = xPortGetFreeHeapSize();

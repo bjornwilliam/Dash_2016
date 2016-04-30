@@ -8,6 +8,7 @@
 #include "Dash_drivers/SD/ff.h"
 #include "Dash_drivers/SD/ctrl_access.h"
 #include "Dash_drivers/mcanFreeRTOSWrapper.h"
+#include "Dash_drivers/tc.h"
 
 //#include "Task_USBMSC.h"
 
@@ -73,9 +74,14 @@ char preset_file_name[LEN_PRESET_FILENAME] = "";
 static char fileName[10] = "";
 TaskHandle_t dataLoggerHandle = NULL;
 
-uint32_t start_time = 0;
-uint32_t stop_time = 0;
+struct tc_timestamp dataloggerTimestamps;
+uint64_t start_time = 0;
+uint64_t stop_time = 0;
+uint64_t string_start_time;
+uint64_t string_stop_time;
 void dataLoggerTask() {
+	volatile UBaseType_t uxHighWaterMark_TV;
+	uxHighWaterMark_TV = uxTaskGetStackHighWaterMark( NULL);
 	memset(&fs, 0, sizeof(FATFS));
 	res = f_mount(LUN_ID_SD_MMC_0_MEM, &fs);
 	if (FR_INVALID_DRIVE == res) {
@@ -108,7 +114,7 @@ void dataLoggerTask() {
 						deleteAllFiles();
 						break;
 					case GET_PARAMETERS_FROM_FILE:
-						getPresetParametersFromFile(preset_file_name);
+						//getPresetParametersFromFile(preset_file_name);
 						break;
 				}
 				//if ( (pio_readPin(DETECT_USB_PIO,DETECT_USB_PIN) == 1 )  && (dataLoggerHandle == xSemaphoreGetMutexHolder(file_access_mutex)) ) {
@@ -161,6 +167,7 @@ void dataLoggerTask() {
 				vTaskDelay(5/portTICK_RATE_MS);
 			break;
 		}
+		//uxHighWaterMark_TV = uxTaskGetStackHighWaterMark( NULL);
 	}
 }
 
@@ -202,20 +209,24 @@ static void logDataToCurrentFile() {
 			file_size_byte_counter	+= 1;
 			preallocation_counter	+= 1;
 			taskENTER_CRITICAL();
-			start_time = RTT->RTT_VR;
+			tc_getTimestamp(&dataloggerTimestamps);
+			start_time = dataloggerTimestamps.total_time_in_us;//RTT->RTT_VR;
 			//In case of *bw is less than btw, it means the volume got full during the write operation
 			f_write(&file_object,dataLogger_buffer, BUFFER_LENGTH, &byte_written);
 			if ( byte_written < BUFFER_LENGTH) {
 				// DISK IS FULL !!
 				dataloggerState = DATALOGGER_IDLE;
 				*dataLogger_buffer = 0;
-				stop_time = RTT->RTT_VR;
+				tc_getTimestamp(&dataloggerTimestamps);
+				stop_time = dataloggerTimestamps.total_time_in_us; //RTT->RTT_VR;
+				
 				SD_card_is_full = 1;
 				taskEXIT_CRITICAL();
 			}
 			else {
-				stop_time = RTT->RTT_VR;
+				tc_getTimestamp(&dataloggerTimestamps);
 				f_sync(&file_object);
+				stop_time = dataloggerTimestamps.total_time_in_us;
 				*dataLogger_buffer = 0;
 				taskEXIT_CRITICAL();
 			}		
@@ -239,16 +250,24 @@ static void logDataToCurrentFile() {
 // 			sprintf(can_data_string, "%s%02X", can_data_string, SensorPacketReceive.can_msg.data.u8[i]);
 // 		}
 // 		
+		tc_getTimestamp(&dataloggerTimestamps);
+		string_start_time = dataloggerTimestamps.total_time_in_us;//RTT->RTT_VR;
 		if ( SensorPacketReceive.can_msg.dataLength == 0) {
 			sprintf(can_data_string, "%02x",0x00);
 		}
-		else {	
-			for (uint8_t i = 0; i < SensorPacketReceive.can_msg.dataLength;i++) {
-				sprintf(can_data_string, "%s%02x",can_data_string, SensorPacketReceive.can_msg.data.u8[i]);
-			}
+		// 2016 30/4 attempt to speed things up, must check that this does what is intendened
+		else {
+			sprintf(can_data_string, "%016x", SensorPacketReceive.can_msg.data.u64);
 		}
+// 		else {	
+// 			for (uint8_t i = 0; i < SensorPacketReceive.can_msg.dataLength;i++) {
+// 				sprintf(can_data_string, "%s%02x",can_data_string, SensorPacketReceive.can_msg.data.u8[i]);
+// 			}
+// 		}	
+			
 		snprintf(dataLogger_buffer + offset, current_message_length,"[%08lx,{%03lx:%s}]\n",SensorPacketReceive.time_stamp, SensorPacketReceive.can_msg.messageID,can_data_string);
-		
+		tc_getTimestamp(&dataloggerTimestamps);
+		string_stop_time = dataloggerTimestamps.total_time_in_us; //RTT->RTT_VR;
 		*can_data_string = 0;
 		offset += current_message_length;
 		
@@ -274,64 +293,64 @@ static void createFileName(char file_name[]) {
 	}
 }
 
-static void getPresetParametersFromFile(char file_name[]) {
-	uint32_t integer_part;
-	uint32_t decimal_part;
-	char integer_part_s[10];
-	char decimal_part_s[10];
-	char number[20];
-	char parameter_name[20];
-	char * ptr_to_token;
-	char * ptr_to_token_parameter_name;
-	
-	char line[50];
-	res = f_open(&file_object, (char const *)file_name, FA_OPEN_EXISTING | FA_READ);
-	if (res == FR_OK) {
-		while ( f_gets(line, sizeof line, &file_object) ) {
-			
-			ptr_to_token_parameter_name = strtok(line,":");
-			strcpy(parameter_name,ptr_to_token_parameter_name);
-			
-			strcpy(number, line + strlen(parameter_name));
-			// Get the integer part
-			ptr_to_token = strtok(number,".");
-			strcpy(integer_part_s,ptr_to_token);
-			// Get the decimal part
-			ptr_to_token = strtok(NULL,".");
-			strcpy(decimal_part_s,ptr_to_token);
-			integer_part = atoi(integer_part_s);
-			decimal_part = atoi(decimal_part_s);
-			float f = integer_part + (float) decimal_part/100;
-			switch (line[0]) {
-				case '1':
-					presetParametersToMenuTask.p_term = f;
-				break;
-				case '2':
-					presetParametersToMenuTask.i_term = f;
-				break;
-				case '3':
-					presetParametersToMenuTask.d_term = f;
-				break;
-				case '4':
-					presetParametersToMenuTask.max_min_term = f;
-				break;
-				case '5':
-					presetParametersToMenuTask.max_decrease_term = f;
-				break;
-				case '6':
-					presetParametersToMenuTask.desired_slip_term = f;
-				break;
-				case '7':
-					presetParametersToMenuTask.max_integral_term = f;
-				break;	
-			}
-		}	
-		// Close file
-		f_close(&file_object);
-		// Filled the preset struct.. Send it to task menu
-		xQueueSendToBack(xPresetQueue,&presetParametersToMenuTask,0);
-	}
-}
+// static void getPresetParametersFromFile(char file_name[]) {
+// 	uint32_t integer_part;
+// 	uint32_t decimal_part;
+// 	char integer_part_s[10];
+// 	char decimal_part_s[10];
+// 	char number[20];
+// 	char parameter_name[20];
+// 	char * ptr_to_token;
+// 	char * ptr_to_token_parameter_name;
+// 	
+// 	char line[50];
+// 	res = f_open(&file_object, (char const *)file_name, FA_OPEN_EXISTING | FA_READ);
+// 	if (res == FR_OK) {
+// 		while ( f_gets(line, sizeof line, &file_object) ) {
+// 			
+// 			ptr_to_token_parameter_name = strtok(line,":");
+// 			strcpy(parameter_name,ptr_to_token_parameter_name);
+// 			
+// 			strcpy(number, line + strlen(parameter_name));
+// 			// Get the integer part
+// 			ptr_to_token = strtok(number,".");
+// 			strcpy(integer_part_s,ptr_to_token);
+// 			// Get the decimal part
+// 			ptr_to_token = strtok(NULL,".");
+// 			strcpy(decimal_part_s,ptr_to_token);
+// 			integer_part = atoi(integer_part_s);
+// 			decimal_part = atoi(decimal_part_s);
+// 			float f = integer_part + (float) decimal_part/100;
+// 			switch (line[0]) {
+// 				case '1':
+// 					presetParametersToMenuTask.p_term = f;
+// 				break;
+// 				case '2':
+// 					presetParametersToMenuTask.i_term = f;
+// 				break;
+// 				case '3':
+// 					presetParametersToMenuTask.d_term = f;
+// 				break;
+// 				case '4':
+// 					presetParametersToMenuTask.max_min_term = f;
+// 				break;
+// 				case '5':
+// 					presetParametersToMenuTask.max_decrease_term = f;
+// 				break;
+// 				case '6':
+// 					presetParametersToMenuTask.desired_slip_term = f;
+// 				break;
+// 				case '7':
+// 					presetParametersToMenuTask.max_integral_term = f;
+// 				break;	
+// 			}
+// 		}	
+// 		// Close file
+// 		f_close(&file_object);
+// 		// Filled the preset struct.. Send it to task menu
+// 		xQueueSendToBack(xPresetQueue,&presetParametersToMenuTask,0);
+// 	}
+// }
 
 
 			//Note to self: Use str function is set to 0 which means no string functions are used in fatfs
