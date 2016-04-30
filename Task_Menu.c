@@ -480,6 +480,7 @@ void dashTask() {
 		//vTaskDelay(35/portTICK_RATE_MS);
 		//vTaskDelayUntil(&xLastWakeTime,150/portTICK_RATE_MS);
 		//uxHighWaterMark_menu = uxTaskGetStackHighWaterMark( NULL);
+		taskYIELD();
 	}
 }
 
@@ -1345,7 +1346,7 @@ static void getDashMessages(ParameterValue *parameter, ConfirmationMsgs *confMsg
 	};
 	//can_sendMessage(MCAN0,txmsg);
 	struct Can_message_t ReceiveMsg;
-	if (xQueueReceive(xDashQueue,&ReceiveMsg,5) == pdTRUE) {
+	if (xQueueReceive(xDashQueue,&ReceiveMsg,0) == pdTRUE) {
 		//can_sendMessage(MCAN0,txmsg);
 		//Received a Can message over the queue
 		switch (ReceiveMsg.messageID) {
